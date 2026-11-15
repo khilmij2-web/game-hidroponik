@@ -1,0 +1,2419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HidroAgro Nusantara — Simulator Hidroponik & Agribisnis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background-color: #060d18;
+      background-image:
+        radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.10), transparent 34%),
+        radial-gradient(circle at 88% 15%, rgba(14, 165, 233, 0.10), transparent 36%),
+        radial-gradient(circle at 50% 95%, rgba(168, 85, 247, 0.07), transparent 40%);
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.7); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    /* Glassmorphism Panels */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.55);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card:hover {
+      border-color: rgba(52, 211, 153, 0.38);
+      background: rgba(30, 41, 59, 0.75);
+    }
+
+    /* Compact Ergonomic Action Buttons */
+    .btn-compact {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.1;
+      white-space: nowrap;
+      transition: all 0.16s ease;
+      cursor: pointer;
+    }
+    .btn-compact:active:not(:disabled) { transform: scale(0.96); }
+    .btn-compact:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-xs-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0.22rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.66rem;
+      font-weight: 700;
+      line-height: 1.1;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-xs-pill:active:not(:disabled) { transform: scale(0.95); }
+    .btn-xs-pill:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Animations */
+    @keyframes waterFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .water-pipe {
+      background: linear-gradient(90deg, #0369a1, #38bdf8, #bae6fd, #0284c7, #0369a1);
+      background-size: 200% 100%;
+      animation: waterFlow 2.2s linear infinite;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+    }
+    @keyframes fishSwim {
+      0%, 100% { transform: translateX(0px) scaleX(1); }
+      48% { transform: translateX(26px) scaleX(1); }
+      50% { transform: translateX(26px) scaleX(-1); }
+      98% { transform: translateX(0px) scaleX(-1); }
+    }
+    .fish-anim {
+      display: inline-block;
+      animation: fishSwim 4.8s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.35), inset 0 0 8px rgba(16, 185, 129, 0.2); }
+      50% { box-shadow: 0 0 16px rgba(16, 185, 129, 0.8), inset 0 0 12px rgba(52, 211, 153, 0.35); }
+    }
+    .ready-glow { animation: pulseGlow 1.9s infinite; }
+
+    /* Atmospheric Greenhouse Visual Themes */
+    .gh-tier-0 {
+      background:
+        radial-gradient(circle at 85% 8%, rgba(251, 191, 36, 0.16), transparent 38%),
+        linear-gradient(165deg, rgba(15, 23, 42, 0.92) 0%, rgba(16, 65, 38, 0.88) 100%);
+      border: 1px dashed rgba(100, 116, 139, 0.6);
+    }
+    .gh-tier-1 {
+      background:
+        repeating-linear-gradient(45deg, rgba(15,23,42,0.18) 0px, rgba(15,23,42,0.18) 6px, transparent 6px, transparent 12px),
+        linear-gradient(165deg, rgba(15, 23, 42, 0.9) 0%, rgba(20, 83, 45, 0.9) 100%);
+      border: 1.5px solid rgba(71, 85, 105, 0.8);
+      box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.5);
+    }
+    .gh-tier-2 {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.22), transparent 55%),
+        linear-gradient(165deg, rgba(12, 34, 56, 0.9) 0%, rgba(16, 78, 48, 0.9) 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.55);
+      box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.16), 0 10px 30px rgba(2, 132, 199, 0.12);
+    }
+    .gh-tier-3 {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.25), transparent 58%),
+        linear-gradient(165deg, rgba(10, 38, 36, 0.92) 0%, rgba(6, 78, 59, 0.92) 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.65);
+      box-shadow: inset 0 0 36px rgba(16, 185, 129, 0.2), 0 10px 35px rgba(16, 185, 129, 0.15);
+    }
+    .gh-tier-4 {
+      background:
+        linear-gradient(rgba(168, 85, 247, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, rgba(192, 132, 252, 0.28), transparent 60%),
+        linear-gradient(165deg, rgba(24, 20, 54, 0.94) 0%, rgba(6, 78, 59, 0.92) 100%);
+      background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%;
+      border: 1.5px solid rgba(192, 132, 252, 0.75);
+      box-shadow: inset 0 0 42px rgba(168, 85, 247, 0.24), 0 12px 40px rgba(168, 85, 247, 0.18);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP HUD BAR -->
+  <header class="glass-panel border-b border-slate-800/80 sticky top-0 z-40 px-3 py-2">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+      
+      <!-- Brand & Level -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-600 to-teal-800 flex items-center justify-center text-white font-bold text-base shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400/30">
+          <i class="fa-solid fa-seedling"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-extrabold text-sm tracking-tight text-white">HidroAgro <span class="text-emerald-400">Nusantara</span></h1>
+            <span id="hud-level" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">Lv.1 Agribisnis</span>
+          </div>
+          <div class="flex items-center gap-2 mt-0.5">
+            <div class="w-24 sm:w-28 h-1.5 bg-slate-800/90 rounded-full overflow-hidden">
+              <div id="hud-xp-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-300" style="width: 10%"></div>
+            </div>
+            <span id="hud-rep" class="text-[10px] text-amber-400 font-bold"><i class="fa-solid fa-star"></i> 10</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Resource Pills -->
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div class="bg-slate-900/85 border border-emerald-500/25 px-2.5 py-1 rounded-xl flex items-center gap-2">
+          <i class="fa-solid fa-wallet text-emerald-400 text-xs"></i>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-bold leading-none">Saldo</div>
+            <div id="hud-money" class="text-xs font-extrabold text-emerald-400 leading-tight">Rp 2.500.000</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/85 border border-sky-500/20 px-2.5 py-1 rounded-xl flex items-center gap-1.5">
+          <i class="fa-solid fa-droplet text-sky-400 text-xs"></i>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-bold leading-none">Tandon</div>
+            <div id="hud-water" class="text-xs font-bold text-sky-300 leading-tight">100%</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/85 border border-purple-500/20 px-2.5 py-1 rounded-xl flex items-center gap-1.5">
+          <i class="fa-solid fa-flask text-purple-400 text-xs"></i>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-bold leading-none">AB Mix</div>
+            <div id="hud-nutrient" class="text-xs font-bold text-purple-300 leading-tight">500 L</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/85 border border-amber-500/20 px-2.5 py-1 rounded-xl flex items-center gap-1.5">
+          <i class="fa-solid fa-fish text-amber-400 text-xs"></i>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-bold leading-none">Pakan</div>
+            <div id="hud-feed" class="text-xs font-bold text-amber-300 leading-tight">50 kg</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time, Weather & System Controls -->
+      <div class="flex items-center gap-1.5">
+        <div class="bg-slate-900/85 border border-slate-700/80 px-2.5 py-1 rounded-xl flex items-center gap-2 text-xs">
+          <span id="hud-weather-icon" class="text-amber-400 text-xs"><i class="fa-solid fa-sun"></i></span>
+          <div>
+            <div id="hud-day" class="font-bold text-[11px] text-slate-200 leading-tight">Hari 1 • 08:00</div>
+            <div id="hud-weather-text" class="text-[9px] text-slate-400 leading-none">Cerah (30°C)</div>
+          </div>
+        </div>
+
+        <!-- Speed Controls -->
+        <div class="flex bg-slate-900/90 p-0.5 rounded-xl border border-slate-700/80">
+          <button onclick="setGameSpeed(0)" id="spd-0" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition" title="Jeda Waktu"><i class="fa-solid fa-pause"></i></button>
+          <button onclick="setGameSpeed(1)" id="spd-1" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 text-white transition" title="Kecepatan Normal 1x">1x</button>
+          <button onclick="setGameSpeed(2)" id="spd-2" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition" title="Kecepatan Cepat 2x">2x</button>
+          <button onclick="setGameSpeed(4)" id="spd-4" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-400 hover:text-white transition" title="Kecepatan Super 4x">4x</button>
+        </div>
+
+        <button onclick="toggleSound()" id="btn-sound" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs flex items-center justify-center transition" title="Suara Efek Aktif/Nonaktif">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+        <button onclick="manualSave()" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-slate-300 text-xs flex items-center justify-center transition" title="Simpan Progres">
+          <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button onclick="openHelpModal()" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-sky-400 text-xs flex items-center justify-center transition" title="Panduan Bermain">
+          <i class="fa-solid fa-circle-question"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-2.5 sm:p-3 grid grid-cols-1 lg:grid-cols-12 gap-3">
+    
+    <!-- LEFT/CENTER: BACKYARD VISUAL SCENE & QUICK INSPECTOR (7 cols on lg) -->
+    <section class="lg:col-span-7 flex flex-col gap-3">
+      
+      <!-- Backyard Visual Canvas Container -->
+      <div id="backyard-scene" class="gh-tier-0 rounded-2xl p-3.5 relative overflow-hidden transition-all duration-500 shadow-2xl">
+        
+        <!-- Scene Header Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5 relative z-10">
+          <div class="flex items-center gap-2 bg-slate-950/75 backdrop-blur-md px-2.5 py-1 rounded-xl border border-slate-700/70">
+            <i class="fa-solid fa-seedling text-emerald-400 text-xs"></i>
+            <span id="scene-gh-title" class="text-xs font-extrabold text-white">Kebun Terbuka Belakang Rumah</span>
+            <span id="scene-land-count" class="text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-md">Tumbuh: 100%</span>
+          </div>
+
+          <!-- Compact Scene Action Buttons -->
+          <div class="flex items-center gap-1.5">
+            <button onclick="refillAllWaterAndNutrients()" class="btn-compact bg-sky-600/90 hover:bg-sky-500 text-white shadow-md shadow-sky-950/50" title="Isi Penuh Tandon Air & Tambah AB Mix jika menipis">
+              <i class="fa-solid fa-faucet-drip"></i> <span>Isi Air & AB</span>
+            </button>
+            <button onclick="harvestAllReady()" class="btn-compact bg-emerald-600/95 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/50" title="Panen seluruh tanaman & ikan yang sudah 100%">
+              <i class="fa-solid fa-basket-shopping"></i> <span>Panen Siap</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sleek Estate Panorama Strip (House, Garage, Farm Shop) -->
+        <div class="grid grid-cols-3 gap-2 mb-2.5 relative z-10">
+          <div onclick="switchTab('assets')" class="cursor-pointer bg-slate-950/65 hover:bg-slate-900/90 border border-slate-700/70 hover:border-amber-500/40 rounded-xl px-2.5 py-1.5 flex items-center gap-2 transition" title="Klik untuk kelola Rumah & Properti">
+            <span id="visual-house-icon" class="text-lg">🏠</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[9px] uppercase tracking-wider text-amber-400 font-bold leading-none">Rumah</div>
+              <div id="visual-house-name" class="text-[11px] font-bold text-white truncate">Rumah Sederhana</div>
+              <div id="visual-house-bonus" class="text-[9px] text-slate-400 truncate">+0% Efisiensi</div>
+            </div>
+          </div>
+
+          <div onclick="switchTab('assets')" class="cursor-pointer bg-slate-950/65 hover:bg-slate-900/90 border border-slate-700/70 hover:border-sky-500/40 rounded-xl px-2.5 py-1.5 flex items-center gap-2 transition" title="Klik untuk kelola Armada Ekspor">
+            <span id="visual-vehicle-icon" class="text-lg">🛵</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[9px] uppercase tracking-wider text-sky-400 font-bold leading-none">Armada</div>
+              <div id="visual-vehicle-name" class="text-[11px] font-bold text-white truncate">Motor Bak Angkut</div>
+              <div id="visual-vehicle-bonus" class="text-[9px] text-slate-400 truncate">Ekspor Dasar</div>
+            </div>
+          </div>
+
+          <div onclick="switchTab('agribusiness')" class="cursor-pointer bg-slate-950/65 hover:bg-slate-900/90 border border-slate-700/70 hover:border-emerald-500/40 rounded-xl px-2.5 py-1.5 flex items-center gap-2 transition" title="Klik untuk kelola Toko Kebun">
+            <span class="text-lg">🏪</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[9px] uppercase tracking-wider text-emerald-400 font-bold leading-none">Toko Kebun</div>
+              <div id="visual-shop-name" class="text-[11px] font-bold text-white truncate">Belum Dibangun</div>
+              <div id="visual-shop-status" class="text-[9px] text-slate-400 truncate">Klik buka toko</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Central Water Tank & Animated Flow Pipe -->
+        <div class="bg-slate-950/70 border border-sky-500/25 rounded-xl px-3 py-1.5 mb-3 flex flex-wrap items-center justify-between gap-2 relative z-10">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-sky-500/15 border border-sky-500/35 flex items-center justify-center text-sky-400 text-xs">
+              <i class="fa-solid fa-water"></i>
+            </div>
+            <div class="text-[11px]">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <span>Tandon Utama (<span id="tandon-count-label">1</span> Unit)</span>
+                <span id="iot-badge" class="hidden text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.2 rounded-full font-bold">IoT Aktif</span>
+              </div>
+              <div class="text-[10px] text-slate-400">
+                Air: <span id="tandon-cap-text" class="text-sky-300 font-semibold">1000 / 1000 L</span> • 
+                pH: <span id="system-ph-text" class="text-emerald-400 font-semibold">6.0</span>
+              </div>
+            </div>
+          </div>
+          <div class="w-full sm:w-36 h-1.5 rounded-full water-pipe"></div>
+        </div>
+
+        <!-- Area Instalasi Header -->
+        <div class="mb-2 flex items-center justify-between relative z-10">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+            <i class="fa-solid fa-layer-group text-emerald-400 mr-1"></i> Instalasi Kebun
+          </span>
+          <span id="slot-usage-text" class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-950/70 text-slate-300 border border-slate-700/70">2 / 4 Slot Lahan</span>
+        </div>
+
+        <!-- INTERACTIVE INSTALLATIONS GRID -->
+        <div id="visual-installations-grid" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[450px] overflow-y-auto pr-1 relative z-10">
+          <!-- Rendered dynamically via JS -->
+        </div>
+
+      </div>
+
+      <!-- QUICK INSPECTOR PANEL (Compact & Ergonomic) -->
+      <div id="quick-inspector" class="glass-panel rounded-2xl p-3.5 shadow-xl">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+            <h2 id="inspector-title" class="font-extrabold text-xs sm:text-sm text-white">Inspector Cepat Rak & Lubang</h2>
+          </div>
+          <span id="inspector-subtitle" class="text-[11px] text-slate-400">Pilih rak/lubang di kebun</span>
+        </div>
+
+        <div id="inspector-body">
+          <div class="text-center py-3 text-slate-400 text-xs">
+            <i class="fa-solid fa-hand-pointer text-xl text-emerald-400/80 mb-1.5 block"></i>
+            Klik <strong>Rak NFT</strong>, <strong>Bak DWC</strong>, <strong>Kolam Aquaponik</strong>, atau <strong>lubang tanam</strong> di atas untuk aksi cepat.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL: MANAGEMENT TABS (5 cols on lg) -->
+    <section class="lg:col-span-5 glass-panel rounded-2xl flex flex-col overflow-hidden shadow-xl">
+      
+      <!-- Navigation Tabs -->
+      <div class="grid grid-cols-5 bg-slate-950/70 border-b border-slate-800/80 p-1 gap-1">
+        <button onclick="switchTab('racks')" id="tab-btn-racks" class="tab-btn py-2 px-1 rounded-xl text-[11px] font-bold flex flex-col sm:flex-row items-center justify-center gap-1 bg-emerald-600 text-white shadow-sm transition">
+          <i class="fa-solid fa-list-check"></i> <span>Rak & Bak</span>
+        </button>
+        <button onclick="switchTab('build')" id="tab-btn-build" class="tab-btn py-2 px-1 rounded-xl text-[11px] font-bold flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-hammer"></i> <span>Bangun</span>
+        </button>
+        <button onclick="switchTab('tools')" id="tab-btn-tools" class="tab-btn py-2 px-1 rounded-xl text-[11px] font-bold flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-microchip"></i> <span>Alat IoT</span>
+        </button>
+        <button onclick="switchTab('agribusiness')" id="tab-btn-agribusiness" class="tab-btn py-2 px-1 rounded-xl text-[11px] font-bold flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-earth-asia"></i> <span>Bisnis</span>
+        </button>
+        <button onclick="switchTab('assets')" id="tab-btn-assets" class="tab-btn py-2 px-1 rounded-xl text-[11px] font-bold flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:bg-slate-800/80 hover:text-white transition">
+          <i class="fa-solid fa-crown"></i> <span>Aset</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Container -->
+      <div id="tab-content" class="p-3.5 flex-1 overflow-y-auto max-h-[790px] space-y-2.5">
+        <!-- Populated dynamically via JS -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
+
+  <!-- HELP / TUTORIAL MODAL -->
+  <div id="help-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass-panel border border-slate-700 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-book-open text-emerald-400"></i> Panduan HidroAgro Nusantara
+        </h3>
+        <button onclick="closeHelpModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="space-y-2.5 text-xs text-slate-300 leading-relaxed max-h-[65vh] overflow-y-auto pr-1">
+        <p><strong class="text-emerald-400">1. Tanam, Panen & Upgrade Lubang Rak:</strong> Klik langsung pada kartu Rak NFT / Bak DWC atau lubang tanam di kebun untuk membuka <em>Inspector Cepat</em>. Tingkatkan kapasitas setiap rak hingga <strong>20 lubang tanam (Lv.6)</strong>!</p>
+        <p><strong class="text-sky-400">2. Air, Nutrisi AB Mix & Aquaponik:</strong> Tanaman memerlukan air dan AB Mix. Pada unit <strong>Aquaponik</strong>, beri pakan ikan agar kotoran ikan terurai menjadi bio-nutrisi organik alami sekaligus memanen ikan.</p>
+        <p><strong class="text-purple-400">3. Upgrade Alat (Lv.1–Lv.5) & Greenhouse:</strong> Tingkatkan Pompa, Dosing Nutrisi, Grow Light, Sensor IoT (otomatisasi penuh di Lv.5), serta ubah kebun belakang rumah menjadi <em>Mega-Agro IoT Glasshouse</em>.</p>
+        <p><strong class="text-amber-400">4. Agribisnis & Ekspor Internasional:</strong> Jual hasil panen langsung di Pasar, bangun <strong>Toko Kebun</strong> di depan rumah untuk penjualan otomatis dengan profit tinggi, atau selesaikan <strong>Kontrak Ekspor</strong>.</p>
+        <p><strong class="text-pink-400">5. Aset & Gaya Hidup:</strong> Gunakan keuntungan agribisnis untuk merenovasi rumah menjadi Mansion, membeli Truk Cold-Chain hingga Helikopter, serta memasang Panel Surya & Cold Storage.</p>
+      </div>
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <button onclick="resetGameConfirm()" class="text-xs text-rose-400 hover:text-rose-300 font-semibold underline">Reset Data Permainan</button>
+        <button onclick="closeHelpModal()" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2">Mulai Bertani!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET CONFIRM MODAL -->
+  <div id="reset-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass-panel border border-rose-500/40 rounded-2xl max-w-sm w-full p-5 text-center space-y-4">
+      <div class="w-11 h-11 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-lg">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 class="font-bold text-base text-white">Reset Semua Progres?</h4>
+      <p class="text-xs text-slate-400">Seluruh kebun, saldo, instalasi, dan aset akan dikembalikan ke awal permainan.</p>
+      <div class="flex gap-2 justify-center">
+        <button onclick="document.getElementById('reset-modal').classList.add('hidden'); document.getElementById('reset-modal').classList.remove('flex');" class="btn-compact bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2">Batal</button>
+        <button onclick="executeResetGame()" class="btn-compact bg-rose-600 hover:bg-rose-500 text-white px-4 py-2">Ya, Reset</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ============================================================================
+// 1. MASTER GAME DATA & CONFIGURATIONS
+// ============================================================================
+
+const CROPS = {
+  kangkung: {
+    id: 'kangkung', name: 'Kangkung Hidro', icon: '🌿', category: 'Sayur Daun',
+    seedCost: 1500, basePrice: 6500, growTime: 28, nutrientUse: 0.6, waterUse: 0.8,
+    minGhTier: 0, exp: 8, desc: 'Cepat panen, tahan banting, cocok untuk pemula.'
+  },
+  pakcoy: {
+    id: 'pakcoy', name: 'Pakcoy Hijau', icon: '🥬', category: 'Sayur Daun',
+    seedCost: 2500, basePrice: 10500, growTime: 38, nutrientUse: 0.8, waterUse: 1.0,
+    minGhTier: 0, exp: 12, desc: 'Sayuran favorit pasar lokal & restoran Asia.'
+  },
+  bayam_merah: {
+    id: 'bayam_merah', name: 'Bayam Merah', icon: '🍁', category: 'Sayur Daun',
+    seedCost: 3000, basePrice: 12500, growTime: 42, nutrientUse: 0.9, waterUse: 1.0,
+    minGhTier: 0, exp: 14, desc: 'Kaya antioksidan dengan nilai jual stabil.'
+  },
+  selada: {
+    id: 'selada', name: 'Selada Romaine', icon: '🥗', category: 'Salad Premium',
+    seedCost: 4000, basePrice: 17000, growTime: 50, nutrientUse: 1.1, waterUse: 1.2,
+    minGhTier: 0, exp: 18, desc: 'Komoditas utama pemasok burger, hotel & ekspor.'
+  },
+  basil: {
+    id: 'basil', name: 'Sweet Basil', icon: '🌱', category: 'Herba Aromatik',
+    seedCost: 5500, basePrice: 24000, growTime: 55, nutrientUse: 1.2, waterUse: 1.1,
+    minGhTier: 1, exp: 24, desc: 'Herba aromatik bernilai tinggi untuk kafe & ekspor.'
+  },
+  kale: {
+    id: 'kale', name: 'Kale Nero', icon: '🥦', category: 'Superfood',
+    seedCost: 7500, basePrice: 33000, growTime: 68, nutrientUse: 1.4, waterUse: 1.3,
+    minGhTier: 1, exp: 32, desc: 'Sayuran superfood populer di pasar Singapura & Jepang.'
+  },
+  tomat_ceri: {
+    id: 'tomat_ceri', name: 'Tomat Ceri', icon: '🍒', category: 'Buah Sayur',
+    seedCost: 11000, basePrice: 48000, growTime: 85, nutrientUse: 1.8, waterUse: 1.6,
+    minGhTier: 2, exp: 45, desc: 'Membutuhkan Greenhouse & nutrisi EC tinggi.'
+  },
+  paprika: {
+    id: 'paprika', name: 'Paprika Merah', icon: '🫑', category: 'Buah Sayur',
+    seedCost: 15000, basePrice: 66000, growTime: 100, nutrientUse: 2.1, waterUse: 1.8,
+    minGhTier: 2, exp: 60, desc: 'Komoditas ekspor kelas atas dengan margin besar.'
+  },
+  stroberi: {
+    id: 'stroberi', name: 'Stroberi Jepang', icon: '🍓', category: 'Buah Premium',
+    seedCost: 22000, basePrice: 98000, growTime: 120, nutrientUse: 2.4, waterUse: 2.0,
+    minGhTier: 3, exp: 85, desc: 'Memerlukan kontrol iklim Smart Greenhouse.'
+  },
+  melon: {
+    id: 'melon', name: 'Melon Yubari', icon: '🍈', category: 'Buah Sultan',
+    seedCost: 35000, basePrice: 165000, growTime: 150, nutrientUse: 3.0, waterUse: 2.5,
+    minGhTier: 3, exp: 130, desc: 'Buah eksklusif bernilai fantastis untuk pasar Jepang.'
+  }
+};
+
+const FISH_TYPES = {
+  lele: { id: 'lele', name: 'Lele Sangkuriang', icon: '🐟', fryCost: 15000, sellPrice: 65000, growTime: 90, bioOutput: 1.2 },
+  nila: { id: 'nila', name: 'Nila Merah', icon: '🐠', fryCost: 25000, sellPrice: 110000, growTime: 115, bioOutput: 1.6 },
+  koi:  { id: 'koi',  name: 'Koi Kohaku Hias', icon: '🎏', fryCost: 60000, sellPrice: 280000, growTime: 150, bioOutput: 2.2 }
+};
+
+const GREENHOUSE_TIERS = [
+  {
+    tier: 0, name: 'Kebun Terbuka Belakang Rumah', cost: 0,
+    growBonus: 0, qualityBonus: 0, weatherResist: 0,
+    desc: 'Kebun terbuka di halaman belakang. Rentan cuaca hujan deras & gelombang panas.'
+  },
+  {
+    tier: 1, name: 'Naungan Paranet & Atap UV', cost: 1800000,
+    growBonus: 0.12, qualityBonus: 0.10, weatherResist: 0.4,
+    desc: 'Melindungi tanaman dari terik matahari langsung & hujan. +12% kecepatan tumbuh.'
+  },
+  {
+    tier: 2, name: 'Greenhouse Polycarbonate', cost: 6500000,
+    growBonus: 0.25, qualityBonus: 0.25, weatherResist: 0.75,
+    desc: 'Ruang tertutup terkendali. Membuka budidaya Tomat Ceri & Paprika. +25% tumbuh & kualitas.'
+  },
+  {
+    tier: 3, name: 'Smart Greenhouse Otomatis', cost: 18000000,
+    growBonus: 0.45, qualityBonus: 0.45, weatherResist: 0.95,
+    desc: 'Kontrol iklim otomatis & misting. Membuka Stroberi Jepang & Melon Premium.'
+  },
+  {
+    tier: 4, name: 'Mega-Agro IoT Glasshouse', cost: 45000000,
+    growBonus: 0.75, qualityBonus: 0.75, weatherResist: 1.0,
+    desc: 'Fasilitas kaca agroteknologi kelas dunia. Kebal cuaca ekstrem, +75% tumbuh & kualitas!'
+  }
+];
+
+const TOOLS_CONFIG = {
+  pump: {
+    id: 'pump', name: 'Pompa Sirkulasi & Aerator', icon: 'fa-water', color: 'sky',
+    maxLv: 5, baseCost: 600000, mult: 2.3,
+    desc: 'Meningkatkan oksigen terlarut & kecepatan aliran nutrisi (+15% kecepatan tumbuh per level).'
+  },
+  dosing: {
+    id: 'dosing', name: 'Dosing Nutrisi AB Mix & pH', icon: 'fa-flask-vial', color: 'purple',
+    maxLv: 5, baseCost: 750000, mult: 2.3,
+    desc: 'Menghemat konsumsi air & AB Mix (-12% pemakaian per level) serta menjaga kestabilan pH.'
+  },
+  growlight: {
+    id: 'growlight', name: 'Lampu Grow Light LED Spectrum', icon: 'fa-lightbulb', color: 'amber',
+    maxLv: 5, baseCost: 900000, mult: 2.4,
+    desc: 'Mempercepat fotosintesis malam hari & meningkatkan Grade Kualitas panen (+15% kualitas/Lv).'
+  },
+  iot: {
+    id: 'iot', name: 'Sensor Otomatis & Kontroler IoT', icon: 'fa-microchip', color: 'emerald',
+    maxLv: 5, baseCost: 1200000, mult: 2.5,
+    desc: 'Lv.2: Auto-AB Mix | Lv.3: Auto-Air | Lv.4: Auto-Pakan | Lv.5: Auto-Panen & Tanam Ulang!'
+  },
+  harvester: {
+    id: 'harvester', name: 'Alat Panen & Pengemasan Vakum', icon: 'fa-box-open', color: 'rose',
+    maxLv: 5, baseCost: 800000, mult: 2.3,
+    desc: 'Meningkatkan hasil panen & harga jual bersih (+14% nilai panen per level).'
+  }
+};
+
+const HOUSES = [
+  { id: 0, name: 'Rumah Sederhana', icon: '🏠', cost: 0, bonusText: '+0% Efisiensi', growBonus: 0, shopBonus: 0 },
+  { id: 1, name: 'Rumah Modern Minimalis', icon: '🏡', cost: 4500000, bonusText: '+10% Tumbuh', growBonus: 0.10, shopBonus: 0.05 },
+  { id: 2, name: 'Villa Agribisnis Asri', icon: '🏘️', cost: 16000000, bonusText: '+20% Tumbuh & +15% Toko', growBonus: 0.20, shopBonus: 0.15 },
+  { id: 3, name: 'Mansion Sultan Hidro', icon: '🏰', cost: 50000000, bonusText: '+35% Tumbuh & +30% Toko', growBonus: 0.35, shopBonus: 0.30 }
+];
+
+const VEHICLES = [
+  { id: 0, name: 'Motor Bak Angkut', icon: '🛵', cost: 0, bonusText: 'Ekspor Dasar (Tier 1)', exportTier: 1, exportBonus: 0 },
+  { id: 1, name: 'Mobil Pickup L300', icon: '🛻', cost: 3500000, bonusText: 'Ekspor Regional (+15%)', exportTier: 2, exportBonus: 0.15 },
+  { id: 2, name: 'Truk Box Cold-Chain', icon: '🚚', cost: 14000000, bonusText: 'Ekspor Global (+35%)', exportTier: 3, exportBonus: 0.35 },
+  { id: 3, name: 'SUV Mewah & Helikopter', icon: '🚁', cost: 42000000, bonusText: 'Ekspor VIP (+60%)', exportTier: 4, exportBonus: 0.60 }
+];
+
+const EXTRA_ASSETS = {
+  solar: { id: 'solar', name: 'Panel Surya Atap Kebun', icon: '☀️', cost: 3200000, desc: 'Mengurangi biaya listrik & air harian sebesar 70%.' },
+  coldstorage: { id: 'coldstorage', name: 'Gudang Cold Storage', icon: '❄️', cost: 5500000, desc: 'Menjaga kesegaran stok panen & menambah +20% harga jual ekspor.' }
+};
+
+const EXPORT_COUNTRIES = [
+  { country: 'Singapura', flag: '🇸🇬', minVehicle: 1, mult: 1.55 },
+  { country: 'Malaysia', flag: '🇲🇾', minVehicle: 1, mult: 1.45 },
+  { country: 'Jepang', flag: '🇯🇵', minVehicle: 2, mult: 1.95 },
+  { country: 'Korea Selatan', flag: '🇰🇷', minVehicle: 2, mult: 1.85 },
+  { country: 'Uni Emirat Arab', flag: '🇦🇪', minVehicle: 3, mult: 2.30 },
+  { country: 'Jerman', flag: '🇩🇪', minVehicle: 3, mult: 2.40 }
+];
+
+const WEATHERS = [
+  { id: 'sunny', name: 'Cerah', temp: '30°C', icon: 'fa-sun', color: 'text-amber-400', growMult: 1.05, waterMult: 1.1 },
+  { id: 'cloudy', name: 'Berawan Sejuk', temp: '26°C', icon: 'fa-cloud-sun', color: 'text-sky-300', growMult: 1.0, waterMult: 0.9 },
+  { id: 'rain', name: 'Hujan Deras', temp: '23°C', icon: 'fa-cloud-showers-heavy', color: 'text-blue-400', growMult: 0.85, waterMult: 0.5 },
+  { id: 'heatwave', name: 'Gelombang Panas', temp: '37°C', icon: 'fa-temperature-high', color: 'text-rose-500', growMult: 0.70, waterMult: 1.8 }
+];
+
+// Konfigurasi Level Kapasitas Lubang Per Tipe Rak/Bak (Lv.1 - Lv.6)
+const RACK_HOLE_TIERS = {
+  nft:  { holes: [6, 8, 10, 12, 16, 20], baseCost: 300000, mult: 1.85 },
+  dwc:  { holes: [4, 6, 8, 10, 12, 15],  baseCost: 350000, mult: 1.85 },
+  aqua: { holes: [4, 6, 8, 10, 12, 14],  baseCost: 450000, mult: 1.90 }
+};
+
+// ============================================================================
+// 2. GAME STATE & AUDIO HELPER
+// ============================================================================
+
+let gameState = null;
+let activeTab = 'racks';
+let selectedUnitId = null;
+let selectedSlotIdx = null;
+let gameSpeed = 1;
+let autoReplantEnabled = true;
+let soundEnabled = true;
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('btn-sound');
+  if (btn) {
+    btn.innerHTML = soundEnabled
+      ? '<i class="fa-solid fa-volume-high"></i>'
+      : '<i class="fa-solid fa-volume-xmark text-slate-500"></i>';
+  }
+  showToast(soundEnabled ? '🔊 Efek suara diaktifkan' : '🔇 Efek suara dimatikan', 'info');
+}
+
+function playSfx(type = 'pop') {
+  if (!soundEnabled) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    if (type === 'upgrade') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.exponentialRampToValueAtTime(840, now + 0.16);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } else if (type === 'harvest') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(780, now + 0.12);
+      gain.gain.setValueAtTime(0.07, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+      osc.start(now);
+      osc.stop(now + 0.13);
+    } else {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(340, now);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+      osc.start(now);
+      osc.stop(now + 0.07);
+    }
+  } catch (e) {}
+}
+
+function createInitialState() {
+  return {
+    money: 2500000,
+    xp: 0,
+    level: 1,
+    reputation: 10,
+    day: 1,
+    hour: 8,
+    weatherIdx: 0,
+    
+    // Resources
+    water: 1000,
+    tandonCount: 1,
+    nutrientLiters: 500,
+    fishFeedKg: 50,
+    
+    // Land & Greenhouse
+    landSlots: 4,
+    ghTier: 0,
+    
+    // Installations (NFT, DWC, Aquaponics)
+    installations: [
+      {
+        id: 'inst-1',
+        type: 'nft',
+        name: 'Rak NFT #1',
+        holeLevel: 1,
+        capacity: 6,
+        slots: [
+          { cropId: 'kangkung', progress: 65, health: 100 },
+          { cropId: 'kangkung', progress: 65, health: 100 },
+          { cropId: 'pakcoy', progress: 30, health: 100 },
+          null, null, null
+        ]
+      },
+      {
+        id: 'inst-2',
+        type: 'dwc',
+        name: 'Bak DWC #1',
+        holeLevel: 1,
+        capacity: 4,
+        slots: Array(4).fill(null)
+      }
+    ],
+    nextInstNum: { nft: 2, dwc: 2, aqua: 1 },
+
+    // Tools Lv.1 - Lv.5
+    tools: {
+      pump: 1,
+      dosing: 1,
+      growlight: 1,
+      iot: 1,
+      harvester: 1
+    },
+
+    // Agribusiness
+    farmShop: {
+      built: false,
+      level: 1,
+      customersServed: 0,
+      totalRevenue: 0
+    },
+    inventory: {},
+    fishInventory: {},
+    contracts: [],
+
+    // Assets
+    houseTier: 0,
+    vehicleTier: 0,
+    ownedExtras: {
+      solar: false,
+      coldstorage: false
+    },
+
+    totalHarvested: 0
+  };
+}
+
+// ============================================================================
+// 3. UTILITY & FORMATTING HELPERS
+// ============================================================================
+
+function formatRp(num) {
+  return 'Rp ' + Math.floor(num).toLocaleString('id-ID');
+}
+
+function formatRpShort(num) {
+  const val = Math.floor(num);
+  if (val >= 1000000) {
+    const jt = val / 1000000;
+    return 'Rp ' + (Number.isInteger(jt) ? jt : jt.toFixed(1).replace('.0', '')) + 'jt';
+  }
+  if (val >= 1000) {
+    const rb = val / 1000;
+    return 'Rp ' + (Number.isInteger(rb) ? rb : rb.toFixed(1).replace('.0', '')) + 'rb';
+  }
+  return 'Rp ' + val;
+}
+
+function getMaxWater() {
+  return gameState.tandonCount * 1000;
+}
+
+function getGrowMultiplier() {
+  const ghBonus = GREENHOUSE_TIERS[gameState.ghTier].growBonus;
+  const pumpBonus = (gameState.tools.pump - 1) * 0.15;
+  const lightBonus = (gameState.tools.growlight - 1) * 0.08;
+  const houseBonus = HOUSES[gameState.houseTier].growBonus;
+  
+  const weather = WEATHERS[gameState.weatherIdx];
+  const resist = GREENHOUSE_TIERS[gameState.ghTier].weatherResist;
+  const effectiveWeatherMult = 1 + (weather.growMult - 1) * (1 - resist);
+
+  return (1 + ghBonus + pumpBonus + lightBonus + houseBonus) * effectiveWeatherMult;
+}
+
+function getQualityRating() {
+  const ghQ = GREENHOUSE_TIERS[gameState.ghTier].qualityBonus;
+  const lightQ = (gameState.tools.growlight - 1) * 0.15;
+  const dosingQ = (gameState.tools.dosing - 1) * 0.08;
+  const score = 1 + ghQ + lightQ + dosingQ;
+  if (score >= 2.2) return { stars: 5, label: 'Grade A+ Ekspor', mult: 1.45 };
+  if (score >= 1.75) return { stars: 4, label: 'Grade A Premium', mult: 1.28 };
+  if (score >= 1.4) return { stars: 3, label: 'Grade B+ Super', mult: 1.15 };
+  if (score >= 1.15) return { stars: 2, label: 'Grade B Segar', mult: 1.06 };
+  return { stars: 1, label: 'Grade C Lokal', mult: 1.0 };
+}
+
+function getHarvestPriceMultiplier() {
+  const qMult = getQualityRating().mult;
+  const toolMult = 1 + (gameState.tools.harvester - 1) * 0.14;
+  return qMult * toolMult;
+}
+
+function addXp(amount) {
+  gameState.xp += amount;
+  const reqXp = gameState.level * 120;
+  if (gameState.xp >= reqXp) {
+    gameState.xp -= reqXp;
+    gameState.level += 1;
+    gameState.reputation += 5;
+    showToast(`🎉 Naik Level! Sekarang Anda Petani Level ${gameState.level}!`, 'success');
+  }
+}
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  const colors = {
+    success: 'bg-emerald-950/95 border-emerald-500/80 text-emerald-100',
+    error: 'bg-rose-950/95 border-rose-500/80 text-rose-100',
+    warn: 'bg-amber-950/95 border-amber-500/80 text-amber-100',
+    info: 'bg-slate-900/95 border-sky-500/80 text-slate-100'
+  };
+  el.className = `pointer-events-auto backdrop-blur-md border px-3.5 py-2 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transition-all duration-300 transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+  el.innerHTML = `<span>${msg}</span>`;
+  container.appendChild(el);
+  requestAnimationFrame(() => {
+    el.classList.remove('translate-y-2', 'opacity-0');
+  });
+  setTimeout(() => {
+    el.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
+}
+
+// ============================================================================
+// 4. CORE GAMEPLAY ACTIONS (PLANT, HARVEST, AQUAPONICS, UPGRADES)
+// ============================================================================
+
+function plantSeedInSlot(instId, slotIdx, cropId, silent = false) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  const crop = CROPS[cropId];
+  if (!inst || !crop) return false;
+  if (inst.slots[slotIdx] !== null) return false;
+
+  if (gameState.ghTier < crop.minGhTier) {
+    if (!silent) showToast(`Membutuhkan ${GREENHOUSE_TIERS[crop.minGhTier].name}!`, 'error');
+    return false;
+  }
+  if (gameState.money < crop.seedCost) {
+    if (!silent) showToast('Saldo kas tidak cukup membeli bibit!', 'error');
+    return false;
+  }
+
+  gameState.money -= crop.seedCost;
+  inst.slots[slotIdx] = {
+    cropId: cropId,
+    progress: 0,
+    health: 100
+  };
+  if (!silent) {
+    playSfx('pop');
+    renderAll();
+  }
+  return true;
+}
+
+function plantAllInRack(instId, cropId) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  const crop = CROPS[cropId];
+  if (!inst || !crop) return;
+
+  if (gameState.ghTier < crop.minGhTier) {
+    showToast(`Varietas ini butuh ${GREENHOUSE_TIERS[crop.minGhTier].name}!`, 'error');
+    return;
+  }
+
+  let planted = 0;
+  for (let i = 0; i < inst.slots.length; i++) {
+    if (inst.slots[i] === null) {
+      if (plantSeedInSlot(instId, i, cropId, true)) {
+        planted++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  if (planted > 0) {
+    playSfx('pop');
+    showToast(`🌱 Menanam ${planted} lubang ${crop.name} di ${inst.name}!`, 'success');
+    renderAll();
+  } else {
+    showToast('Tidak ada lubang kosong atau saldo bibit kurang.', 'warn');
+  }
+}
+
+function harvestSingleSlot(instId, slotIdx, silent = false) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  if (!inst) return false;
+  const slot = inst.slots[slotIdx];
+  if (!slot || slot.progress < 100) return false;
+
+  const crop = CROPS[slot.cropId];
+  gameState.inventory[crop.id] = (gameState.inventory[crop.id] || 0) + 1;
+  gameState.totalHarvested += 1;
+  addXp(crop.exp);
+  inst.slots[slotIdx] = null;
+
+  if (!silent) {
+    playSfx('harvest');
+    showToast(`🧺 Panen 1 ${crop.name} masuk ke Gudang!`, 'success');
+    renderAll();
+  }
+  return true;
+}
+
+function harvestRack(instId) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  if (!inst) return;
+  let count = 0;
+  for (let i = 0; i < inst.slots.length; i++) {
+    if (harvestSingleSlot(instId, i, true)) count++;
+  }
+  if (count > 0) {
+    playSfx('harvest');
+    showToast(`🧺 Panen ${count} tanaman siap dari ${inst.name}!`, 'success');
+    renderAll();
+  } else {
+    showToast('Belum ada tanaman yang siap panen (100%) di rak ini.', 'warn');
+  }
+}
+
+function harvestAllReady() {
+  let total = 0;
+  gameState.installations.forEach(inst => {
+    for (let i = 0; i < inst.slots.length; i++) {
+      if (harvestSingleSlot(inst.id, i, true)) total++;
+    }
+    if (inst.type === 'aqua' && inst.fish && inst.fish.progress >= 100) {
+      harvestAquaFish(inst.id, true);
+      total++;
+    }
+  });
+
+  if (total > 0) {
+    playSfx('harvest');
+    showToast(`🎉 Panen Raya! ${total} komoditas masuk ke Gudang!`, 'success');
+    renderAll();
+  } else {
+    showToast('Belum ada tanaman atau ikan yang siap panen.', 'info');
+  }
+}
+
+function refillAllWaterAndNutrients() {
+  const maxW = getMaxWater();
+  const neededW = maxW - gameState.water;
+  const waterCost = Math.ceil(neededW * 25);
+
+  let didSomething = false;
+  if (neededW > 10) {
+    if (gameState.money >= waterCost) {
+      gameState.money -= waterCost;
+      gameState.water = maxW;
+      didSomething = true;
+      showToast(`💧 Tandon air terisi penuh (${formatRp(waterCost)}).`, 'info');
+    } else {
+      showToast('Saldo tidak cukup mengisi ulang air tandon.', 'error');
+    }
+  }
+
+  if (gameState.nutrientLiters < 100) {
+    const nutCost = 150000;
+    if (gameState.money >= nutCost) {
+      gameState.money -= nutCost;
+      gameState.nutrientLiters += 300;
+      didSomething = true;
+      showToast('🧪 +300L Larutan AB Mix ditambahkan!', 'success');
+    }
+  }
+
+  if (!didSomething && neededW <= 10) {
+    showToast('Tandon air sudah penuh & stok nutrisi aman!', 'info');
+  }
+  renderAll();
+}
+
+// Aquaponics Actions
+function stockAquaFish(instId, fishTypeId) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  const fish = FISH_TYPES[fishTypeId];
+  if (!inst || inst.type !== 'aqua' || !fish) return;
+  if (inst.fish !== null) {
+    showToast('Kolam masih berisi ikan!', 'warn');
+    return;
+  }
+  if (gameState.money < fish.fryCost) {
+    showToast('Saldo tidak cukup membeli bibit ikan!', 'error');
+    return;
+  }
+  gameState.money -= fish.fryCost;
+  inst.fish = {
+    typeId: fishTypeId,
+    progress: 0,
+    fedTimer: 100
+  };
+  playSfx('pop');
+  showToast(`🐟 Menebar bibit ${fish.name} di ${inst.name}!`, 'success');
+  renderAll();
+}
+
+function feedAquaFish(instId, silent = false) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  if (!inst || inst.type !== 'aqua' || !inst.fish) return false;
+  if (gameState.fishFeedKg < 2) {
+    if (!silent) showToast('Stok pakan ikan habis! Beli di tab Bisnis.', 'error');
+    return false;
+  }
+  gameState.fishFeedKg -= 2;
+  inst.fish.fedTimer = Math.min(100, inst.fish.fedTimer + 50);
+  inst.bioNutrient = Math.min(100, (inst.bioNutrient || 0) + 40);
+  if (!silent) {
+    playSfx('pop');
+    showToast(`🍤 Ikan di ${inst.name} diberi pakan! Bio-nutrisi meningkat.`, 'success');
+    renderAll();
+  }
+  return true;
+}
+
+function harvestAquaFish(instId, silent = false) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  if (!inst || inst.type !== 'aqua' || !inst.fish || inst.fish.progress < 100) return;
+  const fish = FISH_TYPES[inst.fish.typeId];
+  gameState.fishInventory[fish.id] = (gameState.fishInventory[fish.id] || 0) + 1;
+  addXp(45);
+  inst.fish = null;
+  if (!silent) {
+    playSfx('harvest');
+    showToast(`🎣 Panen ${fish.name} masuk ke Gudang!`, 'success');
+    renderAll();
+  }
+}
+
+// ============================================================================
+// 5. BUILDING, EXPANSION, HOLE UPGRADES & EQUIPMENT UPGRADES
+// ============================================================================
+
+function getRackHoleUpgradeInfo(inst) {
+  const cfg = RACK_HOLE_TIERS[inst.type] || RACK_HOLE_TIERS.nft;
+  const curLv = inst.holeLevel || 1;
+  const maxLv = cfg.holes.length;
+  const maxHoles = cfg.holes[maxLv - 1];
+  if (curLv >= maxLv) {
+    return { isMax: true, curLv, nextLv: maxLv, curHoles: inst.capacity, nextHoles: inst.capacity, maxHoles, cost: 0 };
+  }
+  const nextLv = curLv + 1;
+  const nextHoles = cfg.holes[nextLv - 1];
+  const cost = Math.round(cfg.baseCost * Math.pow(cfg.mult, curLv - 1));
+  return { isMax: false, curLv, nextLv, curHoles: inst.capacity, nextHoles, maxHoles, cost };
+}
+
+function upgradeRackHoles(instId, silent = false) {
+  const inst = gameState.installations.find(i => i.id === instId);
+  if (!inst) return false;
+  const info = getRackHoleUpgradeInfo(inst);
+  if (info.isMax) {
+    if (!silent) showToast(`${inst.name} sudah mencapai kapasitas maksimal!`, 'info');
+    return false;
+  }
+  if (gameState.money < info.cost) {
+    if (!silent) showToast(`Saldo tidak cukup! Butuh ${formatRp(info.cost)}.`, 'error');
+    return false;
+  }
+
+  gameState.money -= info.cost;
+  const addedHoles = info.nextHoles - inst.slots.length;
+  inst.holeLevel = info.nextLv;
+  inst.capacity = info.nextHoles;
+  for (let i = 0; i < addedHoles; i++) {
+    inst.slots.push(null);
+  }
+  addXp(20 * info.curLv);
+
+  if (!silent) {
+    playSfx('upgrade');
+    showToast(`🕳️ ${inst.name} → Lv.${info.nextLv} (${info.nextHoles} Lubang Tanam)!`, 'success');
+    renderAll();
+  }
+  return true;
+}
+
+function upgradeAllRackHoles() {
+  let upgradedCount = 0;
+  let totalSpent = 0;
+
+  const candidates = gameState.installations
+    .map(inst => ({ inst, info: getRackHoleUpgradeInfo(inst) }))
+    .filter(item => !item.info.isMax)
+    .sort((a, b) => a.info.cost - b.info.cost);
+
+  if (candidates.length === 0) {
+    showToast('Semua rak & bak sudah di kapasitas maksimal!', 'info');
+    return;
+  }
+
+  for (const item of candidates) {
+    if (gameState.money >= item.info.cost) {
+      totalSpent += item.info.cost;
+      if (upgradeRackHoles(item.inst.id, true)) {
+        upgradedCount++;
+      }
+    }
+  }
+
+  if (upgradedCount > 0) {
+    playSfx('upgrade');
+    showToast(`🚀 Upgrade lubang pada ${upgradedCount} rak (${formatRpShort(totalSpent)})!`, 'success');
+    renderAll();
+  } else {
+    showToast(`Saldo tidak cukup untuk upgrade rak termurah (${formatRpShort(candidates[0].info.cost)}).`, 'error');
+  }
+}
+
+function getInstallationCost(type) {
+  const count = gameState.installations.filter(i => i.type === type).length;
+  if (type === 'nft') return Math.round(450000 * Math.pow(1.25, count));
+  if (type === 'dwc') return Math.round(600000 * Math.pow(1.25, count));
+  if (type === 'aqua') return Math.round(1400000 * Math.pow(1.3, count));
+  return 500000;
+}
+
+function buyInstallation(type) {
+  if (gameState.installations.length >= gameState.landSlots) {
+    showToast('Slot lahan penuh! Perluas Lahan terlebih dahulu.', 'error');
+    return;
+  }
+  const cost = getInstallationCost(type);
+  if (gameState.money < cost) {
+    showToast('Saldo kas tidak mencukupi!', 'error');
+    return;
+  }
+
+  gameState.money -= cost;
+  const num = gameState.nextInstNum[type]++;
+  const startHoles = RACK_HOLE_TIERS[type].holes[0];
+  let newInst = null;
+
+  if (type === 'nft') {
+    newInst = {
+      id: 'inst-' + Date.now() + Math.random(),
+      type: 'nft',
+      name: `Rak NFT #${num}`,
+      holeLevel: 1,
+      capacity: startHoles,
+      slots: Array(startHoles).fill(null)
+    };
+  } else if (type === 'dwc') {
+    newInst = {
+      id: 'inst-' + Date.now() + Math.random(),
+      type: 'dwc',
+      name: `Bak DWC #${num}`,
+      holeLevel: 1,
+      capacity: startHoles,
+      slots: Array(startHoles).fill(null)
+    };
+  } else if (type === 'aqua') {
+    newInst = {
+      id: 'inst-' + Date.now() + Math.random(),
+      type: 'aqua',
+      name: `Aquaponik #${num}`,
+      holeLevel: 1,
+      capacity: startHoles,
+      slots: Array(startHoles).fill(null),
+      fish: null,
+      bioNutrient: 50
+    };
+  }
+
+  gameState.installations.push(newInst);
+  addXp(30);
+  playSfx('upgrade');
+  showToast(`🏗️ Memasang ${newInst.name} (${startHoles} Lubang)!`, 'success');
+  renderAll();
+}
+
+function getLandExpansionCost() {
+  const expansions = (gameState.landSlots - 4) / 2;
+  return Math.round(1200000 * Math.pow(1.45, expansions));
+}
+
+function expandLand() {
+  const cost = getLandExpansionCost();
+  if (gameState.money < cost) {
+    showToast('Saldo tidak cukup memperluas lahan!', 'error');
+    return;
+  }
+  gameState.money -= cost;
+  gameState.landSlots += 2;
+  addXp(40);
+  playSfx('upgrade');
+  showToast(`📐 Lahan diperluas menjadi ${gameState.landSlots} slot!`, 'success');
+  renderAll();
+}
+
+function buyTandon() {
+  const cost = Math.round(500000 * Math.pow(1.35, gameState.tandonCount - 1));
+  if (gameState.money < cost) {
+    showToast('Saldo tidak cukup membeli tandon!', 'error');
+    return;
+  }
+  gameState.money -= cost;
+  gameState.tandonCount += 1;
+  gameState.water += 1000;
+  playSfx('upgrade');
+  showToast(`🛢️ Tandon menjadi ${gameState.tandonCount} unit (${getMaxWater()}L)!`, 'success');
+  renderAll();
+}
+
+function upgradeGreenhouse() {
+  const nextTier = gameState.ghTier + 1;
+  if (nextTier >= GREENHOUSE_TIERS.length) return;
+  const gh = GREENHOUSE_TIERS[nextTier];
+  if (gameState.money < gh.cost) {
+    showToast('Saldo belum cukup upgrade Greenhouse!', 'error');
+    return;
+  }
+  gameState.money -= gh.cost;
+  gameState.ghTier = nextTier;
+  gameState.reputation += 15;
+  addXp(100);
+  playSfx('upgrade');
+  showToast(`🏛️ Selamat! Kebun menjadi ${gh.name}!`, 'success');
+  renderAll();
+}
+
+function upgradeTool(toolKey) {
+  const cfg = TOOLS_CONFIG[toolKey];
+  const curLv = gameState.tools[toolKey];
+  if (curLv >= cfg.maxLv) return;
+  const cost = Math.round(cfg.baseCost * Math.pow(cfg.mult, curLv - 1));
+  if (gameState.money < cost) {
+    showToast('Saldo tidak cukup upgrade peralatan!', 'error');
+    return;
+  }
+  gameState.money -= cost;
+  gameState.tools[toolKey] = curLv + 1;
+  addXp(35 * curLv);
+  playSfx('upgrade');
+  showToast(`⚙️ ${cfg.name} → Level ${curLv + 1}!`, 'success');
+  renderAll();
+}
+
+// ============================================================================
+// 6. AGRIBUSINESS: FARM SHOP, EXPORT CONTRACTS, SUPPLIES & ASSETS
+// ============================================================================
+
+function buySupply(type) {
+  if (type === 'nutrient') {
+    const cost = 150000;
+    if (gameState.money < cost) return showToast('Saldo tidak cukup!', 'error');
+    gameState.money -= cost;
+    gameState.nutrientLiters += 300;
+    playSfx('pop');
+    showToast('🧪 +300L Nutrisi AB Mix Pekat.', 'success');
+  } else if (type === 'feed') {
+    const cost = 120000;
+    if (gameState.money < cost) return showToast('Saldo tidak cukup!', 'error');
+    gameState.money -= cost;
+    gameState.fishFeedKg += 40;
+    playSfx('pop');
+    showToast('🍤 +40kg Pelet Pakan Ikan.', 'success');
+  }
+  renderAll();
+}
+
+function sellDirectMarket(itemType, id) {
+  const priceMult = getHarvestPriceMultiplier();
+  if (itemType === 'crop') {
+    const qty = gameState.inventory[id] || 0;
+    if (qty <= 0) return;
+    const crop = CROPS[id];
+    const unitPrice = Math.round(crop.basePrice * priceMult);
+    const total = unitPrice * qty;
+    gameState.money += total;
+    gameState.inventory[id] = 0;
+    playSfx('harvest');
+    showToast(`💵 Terjual ${qty}x ${crop.name} (${formatRp(total)})!`, 'success');
+  } else if (itemType === 'fish') {
+    const qty = gameState.fishInventory[id] || 0;
+    if (qty <= 0) return;
+    const fish = FISH_TYPES[id];
+    const total = fish.sellPrice * qty;
+    gameState.money += total;
+    gameState.fishInventory[id] = 0;
+    playSfx('harvest');
+    showToast(`🐟 Terjual ${qty}x ${fish.name} (${formatRp(total)})!`, 'success');
+  }
+  renderAll();
+}
+
+function buildOrUpgradeFarmShop() {
+  if (!gameState.farmShop.built) {
+    const cost = 1500000;
+    if (gameState.money < cost) return showToast('Saldo tidak cukup membangun Toko Kebun!', 'error');
+    gameState.money -= cost;
+    gameState.farmShop.built = true;
+    gameState.farmShop.level = 1;
+    gameState.reputation += 10;
+    playSfx('upgrade');
+    showToast('🏪 Toko Kebun dibangun! Penjualan otomatis margin +25%!', 'success');
+  } else if (gameState.farmShop.level < 5) {
+    const cost = Math.round(1800000 * Math.pow(1.8, gameState.farmShop.level - 1));
+    if (gameState.money < cost) return showToast('Saldo tidak cukup upgrade Toko Kebun!', 'error');
+    gameState.money -= cost;
+    gameState.farmShop.level += 1;
+    gameState.reputation += 8;
+    playSfx('upgrade');
+    showToast(`🏪 Toko Kebun naik ke Level ${gameState.farmShop.level}!`, 'success');
+  }
+  renderAll();
+}
+
+function generateExportContract() {
+  const unlockedCrops = Object.values(CROPS).filter(c => c.minGhTier <= gameState.ghTier);
+  const crop = unlockedCrops[Math.floor(Math.random() * unlockedCrops.length)];
+  const validCountries = EXPORT_COUNTRIES.filter(c => c.minVehicle <= Math.max(1, gameState.vehicleTier));
+  const dest = validCountries[Math.floor(Math.random() * validCountries.length)];
+
+  const qty = 6 + Math.floor(Math.random() * (6 + gameState.level * 2));
+  const coldBonus = gameState.ownedExtras.coldstorage ? 0.20 : 0;
+  const vehBonus = VEHICLES[gameState.vehicleTier].exportBonus;
+  const reward = Math.round(crop.basePrice * qty * dest.mult * (1 + coldBonus + vehBonus));
+
+  gameState.contracts.push({
+    id: 'exp-' + Date.now() + Math.random(),
+    country: dest.country,
+    flag: dest.flag,
+    cropId: crop.id,
+    qty: qty,
+    reward: reward,
+    daysLeft: 4 + Math.floor(Math.random() * 4)
+  });
+}
+
+function fulfillContract(contractId) {
+  if (gameState.vehicleTier < 1) {
+    showToast('Beli minimal Mobil Pickup L300 di tab Aset untuk ekspor!', 'error');
+    return;
+  }
+  const idx = gameState.contracts.findIndex(c => c.id === contractId);
+  if (idx === -1) return;
+  const contract = gameState.contracts[idx];
+  const have = gameState.inventory[contract.cropId] || 0;
+  if (have < contract.qty) {
+    showToast(`Stok ${CROPS[contract.cropId].name} kurang (${have}/${contract.qty})!`, 'error');
+    return;
+  }
+
+  gameState.inventory[contract.cropId] -= contract.qty;
+  gameState.money += contract.reward;
+  gameState.reputation += 12;
+  addXp(90);
+  gameState.contracts.splice(idx, 1);
+  playSfx('harvest');
+  showToast(`🚢 Ekspor ke ${contract.country} sukses! Profit ${formatRp(contract.reward)}!`, 'success');
+  generateExportContract();
+  renderAll();
+}
+
+function buyHouseUpgrade() {
+  const next = gameState.houseTier + 1;
+  if (next >= HOUSES.length) return;
+  const h = HOUSES[next];
+  if (gameState.money < h.cost) return showToast('Saldo belum cukup renovasi rumah!', 'error');
+  gameState.money -= h.cost;
+  gameState.houseTier = next;
+  gameState.reputation += 20;
+  playSfx('upgrade');
+  showToast(`🏡 Rumah ditingkatkan menjadi ${h.name}!`, 'success');
+  renderAll();
+}
+
+function buyVehicleUpgrade() {
+  const next = gameState.vehicleTier + 1;
+  if (next >= VEHICLES.length) return;
+  const v = VEHICLES[next];
+  if (gameState.money < v.cost) return showToast('Saldo belum cukup membeli kendaraan!', 'error');
+  gameState.money -= v.cost;
+  gameState.vehicleTier = next;
+  gameState.reputation += 15;
+  playSfx('upgrade');
+  showToast(`🚚 Kendaraan baru di garasi: ${v.name}!`, 'success');
+  renderAll();
+}
+
+function buyExtraAsset(key) {
+  if (gameState.ownedExtras[key]) return;
+  const asset = EXTRA_ASSETS[key];
+  if (gameState.money < asset.cost) return showToast('Saldo tidak mencukupi!', 'error');
+  gameState.money -= asset.cost;
+  gameState.ownedExtras[key] = true;
+  gameState.reputation += 15;
+  playSfx('upgrade');
+  showToast(`✨ Berhasil membangun ${asset.name}!`, 'success');
+  renderAll();
+}
+
+// ============================================================================
+// 7. SIMULATION TICK ENGINE (REAL-TIME LOOP)
+// ============================================================================
+
+let tickCounter = 0;
+
+function gameTick() {
+  if (gameSpeed === 0 || !gameState) return;
+
+  tickCounter++;
+  const dt = 0.5 * gameSpeed;
+
+  if (tickCounter % 6 === 0) {
+    gameState.hour += 1;
+    if (gameState.hour >= 24) {
+      gameState.hour = 0;
+      onNewDay();
+    }
+    if (gameState.farmShop.built && gameState.hour % 3 === 0) {
+      processFarmShopSale();
+    }
+  }
+
+  const iotLv = gameState.tools.iot;
+  if (iotLv >= 2 && gameState.nutrientLiters < 40 && gameState.money >= 150000) {
+    gameState.money -= 150000;
+    gameState.nutrientLiters += 300;
+  }
+  if (iotLv >= 3 && gameState.water < getMaxWater() * 0.25) {
+    const needed = getMaxWater() - gameState.water;
+    const cost = Math.ceil(needed * 25);
+    if (gameState.money >= cost) {
+      gameState.money -= cost;
+      gameState.water = getMaxWater();
+    }
+  }
+
+  const growMult = getGrowMultiplier();
+  const dosingSave = 1 - (gameState.tools.dosing - 1) * 0.12;
+  const weather = WEATHERS[gameState.weatherIdx];
+  const resist = GREENHOUSE_TIERS[gameState.ghTier].weatherResist;
+  const evapMult = 1 + (weather.waterMult - 1) * (1 - resist);
+
+  gameState.installations.forEach(inst => {
+    const isAqua = inst.type === 'aqua';
+    const dwcBonus = inst.type === 'dwc' ? 1.12 : 1.0;
+    const densityOverhead = 1 + ((inst.holeLevel || 1) - 1) * 0.04;
+
+    if (isAqua && inst.fish) {
+      const fishCfg = FISH_TYPES[inst.fish.typeId];
+      if (iotLv >= 4 && inst.fish.fedTimer < 30 && gameState.fishFeedKg >= 2) {
+        feedAquaFish(inst.id, true);
+      }
+
+      if (inst.fish.fedTimer > 0) {
+        inst.fish.fedTimer = Math.max(0, inst.fish.fedTimer - 0.8 * dt);
+        inst.fish.progress = Math.min(100, inst.fish.progress + (100 / fishCfg.growTime) * dt);
+        inst.bioNutrient = Math.min(100, (inst.bioNutrient || 0) + fishCfg.bioOutput * 0.6 * dt);
+      }
+      if (iotLv >= 5 && inst.fish.progress >= 100) {
+        const prevType = inst.fish.typeId;
+        harvestAquaFish(inst.id, true);
+        if (gameState.money >= FISH_TYPES[prevType].fryCost) {
+          gameState.money -= FISH_TYPES[prevType].fryCost;
+          inst.fish = { typeId: prevType, progress: 0, fedTimer: 100 };
+        }
+      }
+    }
+
+    inst.slots.forEach((slot, idx) => {
+      if (!slot) return;
+      const crop = CROPS[slot.cropId];
+      if (slot.progress >= 100) {
+        if (iotLv >= 5 && autoReplantEnabled) {
+          const prevCropId = slot.cropId;
+          harvestSingleSlot(inst.id, idx, true);
+          plantSeedInSlot(inst.id, idx, prevCropId, true);
+        }
+        return;
+      }
+
+      const wNeed = crop.waterUse * 0.22 * dosingSave * evapMult * densityOverhead * dt;
+      if (gameState.water < wNeed) return;
+      gameState.water = Math.max(0, gameState.water - wNeed);
+
+      let nutEfficiency = 1.0;
+      if (isAqua && (inst.bioNutrient || 0) > 5) {
+        inst.bioNutrient = Math.max(0, inst.bioNutrient - crop.nutrientUse * 0.35 * densityOverhead * dt);
+        nutEfficiency = 1.15;
+      } else {
+        const nNeed = crop.nutrientUse * 0.14 * dosingSave * densityOverhead * dt;
+        if (gameState.nutrientLiters >= nNeed) {
+          gameState.nutrientLiters = Math.max(0, gameState.nutrientLiters - nNeed);
+        } else {
+          nutEfficiency = 0.35;
+        }
+      }
+
+      const deltaProgress = (100 / crop.growTime) * growMult * dwcBonus * nutEfficiency * dt;
+      slot.progress = Math.min(100, slot.progress + deltaProgress);
+    });
+  });
+
+  renderHUD();
+  updateVisualProgressFast();
+}
+
+function onNewDay() {
+  gameState.day += 1;
+
+  const baseBill = 25000 + gameState.installations.length * 12000 + gameState.ghTier * 20000;
+  const finalBill = gameState.ownedExtras.solar ? Math.round(baseBill * 0.3) : baseBill;
+  if (gameState.money >= finalBill) {
+    gameState.money -= finalBill;
+  }
+
+  const r = Math.random();
+  if (r < 0.45) gameState.weatherIdx = 0;
+  else if (r < 0.72) gameState.weatherIdx = 1;
+  else if (r < 0.90) gameState.weatherIdx = 2;
+  else gameState.weatherIdx = 3;
+
+  gameState.contracts.forEach(c => c.daysLeft -= 1);
+  gameState.contracts = gameState.contracts.filter(c => c.daysLeft > 0);
+  while (gameState.contracts.length < 3) {
+    generateExportContract();
+  }
+
+  saveGameSilent();
+  renderAll();
+}
+
+function processFarmShopSale() {
+  const availableIds = Object.keys(gameState.inventory).filter(id => gameState.inventory[id] > 0);
+  if (availableIds.length === 0) return;
+
+  const maxItemsToSell = gameState.farmShop.level + 1;
+  let soldTotal = 0;
+  let earnedTotal = 0;
+
+  for (let i = 0; i < maxItemsToSell; i++) {
+    const nonEmpty = Object.keys(gameState.inventory).filter(id => gameState.inventory[id] > 0);
+    if (nonEmpty.length === 0) break;
+    const pickId = nonEmpty[Math.floor(Math.random() * nonEmpty.length)];
+    const crop = CROPS[pickId];
+    const shopMargin = 1.25 + (gameState.farmShop.level - 1) * 0.08 + HOUSES[gameState.houseTier].shopBonus;
+    const price = Math.round(crop.basePrice * getHarvestPriceMultiplier() * shopMargin);
+
+    gameState.inventory[pickId] -= 1;
+    gameState.money += price;
+    soldTotal++;
+    earnedTotal += price;
+  }
+
+  if (soldTotal > 0) {
+    gameState.farmShop.customersServed += soldTotal;
+    gameState.farmShop.totalRevenue += earnedTotal;
+  }
+}
+
+// ============================================================================
+// 8. UI RENDERING FUNCTIONS
+// ============================================================================
+
+function renderAll() {
+  renderHUD();
+  renderBackyardVisual();
+  renderInspector();
+  renderActiveTab();
+}
+
+function renderHUD() {
+  document.getElementById('hud-level').textContent = `Lv.${gameState.level} Agribisnis`;
+  const reqXp = gameState.level * 120;
+  document.getElementById('hud-xp-bar').style.width = `${Math.min(100, (gameState.xp / reqXp) * 100)}%`;
+  document.getElementById('hud-rep').innerHTML = `<i class="fa-solid fa-star"></i> ${gameState.reputation}`;
+
+  document.getElementById('hud-money').textContent = formatRp(gameState.money);
+  const waterPct = Math.round((gameState.water / getMaxWater()) * 100);
+  document.getElementById('hud-water').textContent = `${waterPct}%`;
+  document.getElementById('hud-nutrient').textContent = `${Math.round(gameState.nutrientLiters)} L`;
+  document.getElementById('hud-feed').textContent = `${Math.round(gameState.fishFeedKg)} kg`;
+
+  const w = WEATHERS[gameState.weatherIdx];
+  document.getElementById('hud-day').textContent = `Hari ${gameState.day} • ${String(gameState.hour).padStart(2, '0')}:00`;
+  document.getElementById('hud-weather-text').textContent = `${w.name} (${w.temp})`;
+  document.getElementById('hud-weather-icon').innerHTML = `<i class="fa-solid ${w.icon} ${w.color}"></i>`;
+
+  const gh = GREENHOUSE_TIERS[gameState.ghTier];
+  const sceneEl = document.getElementById('backyard-scene');
+  sceneEl.className = `gh-tier-${gameState.ghTier} rounded-2xl p-3.5 relative overflow-hidden transition-all duration-500 shadow-2xl`;
+  document.getElementById('scene-gh-title').textContent = gh.name;
+  document.getElementById('scene-land-count').textContent = `Tumbuh ${(getGrowMultiplier() * 100).toFixed(0)}%`;
+  document.getElementById('slot-usage-text').textContent = `${gameState.installations.length} / ${gameState.landSlots} Slot`;
+
+  const house = HOUSES[gameState.houseTier];
+  document.getElementById('visual-house-icon').textContent = house.icon;
+  document.getElementById('visual-house-name').textContent = house.name;
+  document.getElementById('visual-house-bonus').textContent = house.bonusText;
+
+  const veh = VEHICLES[gameState.vehicleTier];
+  document.getElementById('visual-vehicle-icon').textContent = veh.icon;
+  document.getElementById('visual-vehicle-name').textContent = veh.name;
+  document.getElementById('visual-vehicle-bonus').textContent = veh.bonusText;
+
+  if (gameState.farmShop.built) {
+    document.getElementById('visual-shop-name').textContent = `Toko Lv.${gameState.farmShop.level}`;
+    document.getElementById('visual-shop-status').textContent = `Omzet ${formatRpShort(gameState.farmShop.totalRevenue)}`;
+  } else {
+    document.getElementById('visual-shop-name').textContent = 'Belum Dibangun';
+    document.getElementById('visual-shop-status').textContent = 'Klik buka toko';
+  }
+
+  document.getElementById('tandon-count-label').textContent = gameState.tandonCount;
+  document.getElementById('tandon-cap-text').textContent = `${Math.round(gameState.water)} / ${getMaxWater()} L`;
+  const phVal = (6.0 + (5 - gameState.tools.dosing) * 0.08).toFixed(1);
+  document.getElementById('system-ph-text').textContent = `${phVal} (${getQualityRating().label})`;
+  
+  const iotBadge = document.getElementById('iot-badge');
+  if (gameState.tools.iot >= 2) {
+    iotBadge.classList.remove('hidden');
+    iotBadge.textContent = `IoT Lv.${gameState.tools.iot}`;
+  } else {
+    iotBadge.classList.add('hidden');
+  }
+}
+
+function renderBackyardVisual() {
+  const grid = document.getElementById('visual-installations-grid');
+  grid.innerHTML = gameState.installations.map(inst => {
+    const isSelected = inst.id === selectedUnitId;
+    const borderClass = isSelected
+      ? 'border-amber-400/90 ring-2 ring-amber-400/35 bg-slate-900/95'
+      : 'border-slate-700/80 hover:border-emerald-400/60 bg-slate-950/75';
+    const holeInfo = getRackHoleUpgradeInfo(inst);
+    
+    let badgeHtml = '';
+    if (inst.type === 'nft') badgeHtml = `<span class="text-[9px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-1.5 py-0.2 rounded font-bold">NFT Lv.${holeInfo.curLv}</span>`;
+    if (inst.type === 'dwc') badgeHtml = `<span class="text-[9px] bg-teal-500/20 text-teal-300 border border-teal-500/30 px-1.5 py-0.2 rounded font-bold">DWC Lv.${holeInfo.curLv}</span>`;
+    if (inst.type === 'aqua') badgeHtml = `<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-bold">Aqua Lv.${holeInfo.curLv}</span>`;
+
+    const readyCount = inst.slots.filter(s => s && s.progress >= 100).length;
+
+    const isDense = inst.capacity >= 12;
+    const isMedium = inst.capacity >= 8 && inst.capacity < 12;
+    const gridColsClass = inst.capacity >= 15 ? 'grid-cols-5' : (inst.capacity >= 8 ? 'grid-cols-4' : 'grid-cols-3');
+    const holeHeightClass = isDense ? 'h-9' : 'h-11';
+
+    const holesHtml = inst.slots.map((slot, idx) => {
+      const holeSelected = isSelected && selectedSlotIdx === idx;
+      if (!slot) {
+        return `
+          <button onclick="event.stopPropagation(); selectUnitAndSlot('${inst.id}', ${idx})"
+            class="${holeHeightClass} rounded-lg bg-slate-900/90 hover:bg-slate-800 border ${holeSelected ? 'border-amber-400 ring-1 ring-amber-400/60' : 'border-slate-800 hover:border-emerald-500/50'} flex flex-col items-center justify-center transition group" title="Lubang #${idx+1} Kosong — Klik untuk tanam">
+            <span class="${isDense ? 'w-2.5 h-2.5' : 'w-3 h-3'} rounded-full bg-slate-950 border border-slate-700 group-hover:border-emerald-400 transition"></span>
+            ${!isDense ? `<span class="text-[8px] text-slate-500 group-hover:text-emerald-400 mt-0.5 font-semibold">+Tanam</span>` : ''}
+          </button>
+        `;
+      }
+      const crop = CROPS[slot.cropId];
+      const isReady = slot.progress >= 100;
+      const scale = (isDense ? 0.5 : 0.58) + (slot.progress / 100) * 0.42;
+      return `
+        <button onclick="event.stopPropagation(); selectUnitAndSlot('${inst.id}', ${idx})"
+          class="${holeHeightClass} rounded-lg relative overflow-hidden border ${isReady ? 'bg-emerald-950/90 border-emerald-400 ready-glow' : 'bg-slate-800/90 border-slate-700/80'} ${holeSelected ? 'ring-2 ring-amber-400' : ''} flex flex-col items-center justify-center transition"
+          title="${crop.name} (${Math.floor(slot.progress)}%)">
+          <span style="transform: scale(${scale})" class="${isDense ? 'text-sm' : 'text-base'} leading-none transition-transform">${crop.icon}</span>
+          <span class="text-[8px] font-extrabold ${isReady ? 'text-emerald-300' : 'text-slate-300'} leading-tight mt-0.5">
+            ${isReady ? 'PANEN' : Math.floor(slot.progress) + '%'}
+          </span>
+          <div class="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style="width: ${slot.progress}%"></div>
+        </button>
+      `;
+    }).join('');
+
+    let aquaPondHtml = '';
+    if (inst.type === 'aqua') {
+      const f = inst.fish;
+      const fCfg = f ? FISH_TYPES[f.typeId] : null;
+      aquaPondHtml = `
+        <div class="mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-between bg-sky-950/45 rounded-lg px-2 py-1">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="fish-anim text-sm">${fCfg ? fCfg.icon : '🫧'}</span>
+            <div class="truncate">
+              <div class="text-[10px] font-bold text-sky-200 truncate">${fCfg ? fCfg.name : 'Kolam Kosong'}</div>
+              <div class="text-[9px] text-sky-400">
+                ${f ? `Tumbuh ${Math.floor(f.progress)}% • Kenyang ${Math.floor(f.fedTimer)}%` : 'Klik tebar bibit'}
+              </div>
+            </div>
+          </div>
+          <span class="text-[9px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold shrink-0">
+            Bio ${Math.floor(inst.bioNutrient || 0)}%
+          </span>
+        </div>
+      `;
+    }
+
+    return `
+      <div onclick="selectUnitAndSlot('${inst.id}', null)"
+        class="cursor-pointer backdrop-blur-md border ${borderClass} rounded-xl p-2.5 transition shadow-lg">
+        <div class="flex items-center justify-between mb-2 gap-1">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="font-extrabold text-xs text-white truncate">${inst.name}</span>
+            ${badgeHtml}
+            <span class="text-[10px] text-slate-400 font-semibold">(${inst.capacity})</span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            ${!holeInfo.isMax ? `
+              <button onclick="event.stopPropagation(); upgradeRackHoles('${inst.id}')"
+                class="btn-xs-pill bg-sky-600/85 hover:bg-sky-500 text-white" title="Tambah Lubang (${holeInfo.curHoles} → ${holeInfo.nextHoles}) • ${formatRp(holeInfo.cost)}">
+                <i class="fa-solid fa-plus"></i>Lubang
+              </button>
+            ` : ''}
+            ${readyCount > 0 ? `
+              <button onclick="event.stopPropagation(); harvestRack('${inst.id}')"
+                class="btn-xs-pill bg-emerald-600 hover:bg-emerald-500 text-white" title="Panen ${readyCount} tanaman siap">
+                <i class="fa-solid fa-basket-shopping"></i>${readyCount}
+              </button>
+            ` : ''}
+          </div>
+        </div>
+        <div class="grid ${gridColsClass} ${isMedium || isDense ? 'gap-1' : 'gap-1.5'}">
+          ${holesHtml}
+        </div>
+        ${aquaPondHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function updateVisualProgressFast() {
+  renderBackyardVisual();
+  if (selectedUnitId) {
+    renderInspector();
+  }
+}
+
+function selectUnitAndSlot(unitId, slotIdx) {
+  selectedUnitId = unitId;
+  selectedSlotIdx = slotIdx;
+  renderBackyardVisual();
+  renderInspector();
+}
+
+function renderInspector() {
+  const titleEl = document.getElementById('inspector-title');
+  const subEl = document.getElementById('inspector-subtitle');
+  const bodyEl = document.getElementById('inspector-body');
+
+  const inst = gameState.installations.find(i => i.id === selectedUnitId);
+  if (!inst) {
+    titleEl.textContent = 'Inspector Cepat Rak & Lubang';
+    subEl.textContent = 'Pilih rak/lubang di kebun';
+    return;
+  }
+
+  const emptyCount = inst.slots.filter(s => s === null).length;
+  const readyCount = inst.slots.filter(s => s && s.progress >= 100).length;
+  const holeInfo = getRackHoleUpgradeInfo(inst);
+
+  titleEl.textContent = `${inst.name} ${selectedSlotIdx !== null ? `• Lubang #${selectedSlotIdx + 1}` : ''}`;
+  subEl.textContent = `${inst.capacity}/${holeInfo.maxHoles} Lubang • Kosong: ${emptyCount}`;
+
+  // Compact 1-Line Hole Upgrade Strip
+  const holeUpgradeBannerHtml = `
+    <div class="bg-slate-900/90 border border-sky-500/25 rounded-xl px-2.5 py-2 mb-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-6 h-6 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center text-xs shrink-0">
+          <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+        </span>
+        <div class="truncate">
+          <div class="text-xs font-bold text-white truncate">
+            Kapasitas: <span class="text-sky-400">${inst.capacity} Lubang</span> <span class="text-[10px] text-slate-400">(Lv.${holeInfo.curLv}/${RACK_HOLE_TIERS[inst.type].holes.length})</span>
+          </div>
+          <div class="text-[10px] text-slate-400 truncate">
+            ${holeInfo.isMax ? 'Kapasitas rak maksimal tercapai' : `Ekspansi menjadi ${holeInfo.nextHoles} lubang tanam`}
+          </div>
+        </div>
+      </div>
+      ${!holeInfo.isMax ? `
+        <button onclick="upgradeRackHoles('${inst.id}')" class="btn-compact bg-sky-600 hover:bg-sky-500 text-white shrink-0" title="Upgrade ke Lv.${holeInfo.nextLv} (${holeInfo.nextHoles} Lubang) seharga ${formatRp(holeInfo.cost)}">
+          <i class="fa-solid fa-plus"></i><span>Lubang (${formatRpShort(holeInfo.cost)})</span>
+        </button>
+      ` : `<span class="text-[10px] font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md shrink-0">MAX</span>`}
+    </div>
+  `;
+
+  let slotDetailHtml = '';
+  if (selectedSlotIdx !== null) {
+    const slot = inst.slots[selectedSlotIdx];
+    if (slot) {
+      const crop = CROPS[slot.cropId];
+      slotDetailHtml = `
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl px-2.5 py-2 mb-2.5 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xl">${crop.icon}</span>
+            <div class="truncate">
+              <div class="text-xs font-bold text-white truncate">${crop.name} <span class="text-slate-400">(#${selectedSlotIdx + 1})</span></div>
+              <div class="text-[10px] text-slate-400">Tumbuh: <strong class="text-emerald-400">${Math.floor(slot.progress)}%</strong> • Jual: ${formatRpShort(crop.basePrice * getHarvestPriceMultiplier())}</div>
+            </div>
+          </div>
+          ${slot.progress >= 100
+            ? `<button onclick="harvestSingleSlot('${inst.id}', ${selectedSlotIdx})" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white shrink-0"><i class="fa-solid fa-hand-sparkles"></i>Panen</button>`
+            : `<span class="text-[10px] bg-slate-900 text-slate-300 border border-slate-700 px-2 py-1 rounded-lg shrink-0 font-semibold">Tumbuh...</span>`
+          }
+        </div>
+      `;
+    }
+  }
+
+  let aquaControlHtml = '';
+  if (inst.type === 'aqua') {
+    if (!inst.fish) {
+      aquaControlHtml = `
+        <div class="bg-sky-950/40 border border-sky-500/25 rounded-xl p-2 mb-2.5">
+          <div class="text-[11px] font-bold text-sky-300 mb-1.5"><i class="fa-solid fa-fish mr-1"></i> Tebar Bibit Ikan:</div>
+          <div class="grid grid-cols-3 gap-1.5">
+            ${Object.values(FISH_TYPES).map(f => `
+              <button onclick="stockAquaFish('${inst.id}', '${f.id}')" class="bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 px-2 py-1.5 rounded-lg text-left transition flex items-center justify-between">
+                <span class="text-xs font-bold text-white truncate">${f.icon} ${f.name.split(' ')[0]}</span>
+                <span class="text-[10px] text-amber-400 font-bold">${formatRpShort(f.fryCost)}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+      const fCfg = FISH_TYPES[inst.fish.typeId];
+      aquaControlHtml = `
+        <div class="bg-sky-950/40 border border-sky-500/25 rounded-xl px-2.5 py-2 mb-2.5 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="text-xs font-bold text-white">${fCfg.icon} ${fCfg.name} (${Math.floor(inst.fish.progress)}%)</div>
+            <div class="text-[10px] text-sky-300">Kenyang: ${Math.floor(inst.fish.fedTimer)}% • Bio-Nutrisi: ${Math.floor(inst.bioNutrient || 0)}%</div>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="feedAquaFish('${inst.id}')" class="btn-compact bg-amber-600 hover:bg-amber-500 text-white" title="Beri pakan 2kg">
+              <i class="fa-solid fa-bowl-food"></i><span>Pakan (2kg)</span>
+            </button>
+            ${inst.fish.progress >= 100 ? `<button onclick="harvestAquaFish('${inst.id}')" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white"><i class="fa-solid fa-fish"></i>Panen</button>` : ''}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Sleek & Compact Seed Cards
+  const seedButtons = Object.values(CROPS).map(crop => {
+    const locked = gameState.ghTier < crop.minGhTier;
+    return `
+      <div class="bg-slate-900/85 border border-slate-800 hover:border-slate-700 rounded-xl px-2.5 py-2 flex items-center justify-between gap-2 ${locked ? 'opacity-50' : ''}">
+        <div class="min-w-0 flex-1">
+          <div class="text-xs font-bold text-white truncate">${crop.icon} ${crop.name}</div>
+          <div class="text-[10px] text-slate-400 truncate">
+            ${locked ? `<span class="text-amber-400">Butuh GH Lv.${crop.minGhTier}</span>` : `${formatRpShort(crop.seedCost)} • ${crop.growTime}s • Jual ${formatRpShort(crop.basePrice)}`}
+          </div>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          ${selectedSlotIdx !== null && inst.slots[selectedSlotIdx] === null && !locked
+            ? `<button onclick="plantSeedInSlot('${inst.id}', ${selectedSlotIdx}, '${crop.id}')" class="btn-xs-pill bg-sky-600 hover:bg-sky-500 text-white" title="Tanam 1 lubang terpilih">1x</button>`
+            : ''
+          }
+          <button ${locked || emptyCount === 0 ? 'disabled' : ''} onclick="plantAllInRack('${inst.id}', '${crop.id}')"
+            class="btn-xs-pill bg-emerald-600 hover:bg-emerald-500 text-white" title="Tanam seluruh lubang kosong di rak ini">
+            <i class="fa-solid fa-seedling"></i>Penuh (${emptyCount})
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  bodyEl.innerHTML = `
+    ${holeUpgradeBannerHtml}
+    ${slotDetailHtml}
+    ${aquaControlHtml}
+    <div class="flex items-center justify-between mb-1.5">
+      <span class="text-[11px] font-bold text-slate-300">Tanam Bibit di ${inst.name}:</span>
+      ${readyCount > 0 ? `<button onclick="harvestRack('${inst.id}')" class="btn-xs-pill bg-emerald-600 hover:bg-emerald-500 text-white"><i class="fa-solid fa-basket-shopping"></i>Panen (${readyCount})</button>` : ''}
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+      ${seedButtons}
+    </div>
+  `;
+}
+
+// ============================================================================
+// 9. RIGHT PANEL TABS RENDERING (WITH COMPACT ACTION BUTTONS)
+// ============================================================================
+
+function switchTab(tabName) {
+  activeTab = tabName;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+    btn.classList.add('text-slate-400');
+  });
+  const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+  if (activeBtn) {
+    activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+    activeBtn.classList.remove('text-slate-400');
+  }
+  renderActiveTab();
+}
+
+function renderActiveTab() {
+  const container = document.getElementById('tab-content');
+  if (activeTab === 'racks') renderTabRacks(container);
+  else if (activeTab === 'build') renderTabBuild(container);
+  else if (activeTab === 'tools') renderTabTools(container);
+  else if (activeTab === 'agribusiness') renderTabAgribusiness(container);
+  else if (activeTab === 'assets') renderTabAssets(container);
+}
+
+// TAB 1: RACK & DWC MANAGEMENT LIST
+function renderTabRacks(container) {
+  const iotLv = gameState.tools.iot;
+  const iotToggleHtml = iotLv >= 5 ? `
+    <div class="bg-purple-950/40 border border-purple-500/35 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+      <div class="text-xs min-w-0">
+        <span class="font-bold text-purple-300"><i class="fa-solid fa-robot mr-1"></i> IoT Lv.5 Auto-Panen & Tanam</span>
+        <p class="text-[10px] text-slate-400 truncate">Otomatis panen & tanam ulang varietas sama.</p>
+      </div>
+      <button onclick="autoReplantEnabled = !autoReplantEnabled; renderActiveTab();" class="btn-xs-pill shrink-0 ${autoReplantEnabled ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300'}">
+        ${autoReplantEnabled ? 'AKTIF' : 'OFF'}
+      </button>
+    </div>
+  ` : '';
+
+  const upgradableCount = gameState.installations.filter(i => !getRackHoleUpgradeInfo(i).isMax).length;
+
+  const listHtml = gameState.installations.map(inst => {
+    const occupied = inst.slots.filter(s => s !== null);
+    const ready = occupied.filter(s => s.progress >= 100);
+    const avgProg = occupied.length > 0
+      ? Math.round(occupied.reduce((acc, s) => acc + s.progress, 0) / occupied.length)
+      : 0;
+    const dominantCrop = occupied.length > 0 ? CROPS[occupied[0].cropId] : null;
+    const holeInfo = getRackHoleUpgradeInfo(inst);
+
+    return `
+      <div class="glass-card rounded-xl p-2.5 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="font-bold text-xs text-white flex flex-wrap items-center gap-1">
+              <span>${inst.name}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 font-bold">
+                ${inst.capacity}/${holeInfo.maxHoles} Lubang (Lv.${holeInfo.curLv})
+              </span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">
+                Isi ${occupied.length}/${inst.capacity}
+              </span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5 truncate">
+              ${dominantCrop ? `${dominantCrop.icon} ${dominantCrop.name}` : 'Rak kosong siap tanam'}
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            ${!holeInfo.isMax ? `
+              <button onclick="upgradeRackHoles('${inst.id}')" class="btn-xs-pill bg-sky-600 hover:bg-sky-500 text-white" title="Ekspansi ${holeInfo.curHoles} → ${holeInfo.nextHoles} Lubang (${formatRp(holeInfo.cost)})">
+                <i class="fa-solid fa-plus"></i>Lubang (${formatRpShort(holeInfo.cost)})
+              </button>
+            ` : `<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">MAX</span>`}
+            <button onclick="selectUnitAndSlot('${inst.id}', null)" class="btn-xs-pill bg-slate-700 hover:bg-slate-600 text-slate-200" title="Buka di Inspector Cepat">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Average Growth Bar -->
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+            <span>Progres Rata-rata</span>
+            <span class="font-bold text-emerald-400">${avgProg}% (${ready.length} Siap)</span>
+          </div>
+          <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all" style="width: ${avgProg}%"></div>
+          </div>
+        </div>
+
+        <!-- Compact Batch Plant & Harvest Controls -->
+        <div class="flex items-center gap-1.5">
+          <select id="batch-seed-${inst.id}" class="flex-1 min-w-0 bg-slate-950/90 border border-slate-700/80 text-[11px] text-white rounded-lg px-2 py-1">
+            ${Object.values(CROPS).filter(c => c.minGhTier <= gameState.ghTier).map(c =>
+              `<option value="${c.id}">${c.icon} ${c.name} (${formatRpShort(c.seedCost)})</option>`
+            ).join('')}
+          </select>
+          <button onclick="plantAllInRack('${inst.id}', document.getElementById('batch-seed-${inst.id}').value)"
+            class="btn-xs-pill bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 px-2.5" title="Tanam penuh seluruh lubang kosong">
+            <i class="fa-solid fa-seedling"></i>Tanam
+          </button>
+          <button onclick="harvestRack('${inst.id}')"
+            class="btn-xs-pill bg-amber-600 hover:bg-amber-500 text-white py-1.5 px-2.5" title="Panen tanaman siap di rak ini">
+            <i class="fa-solid fa-basket-shopping"></i>${ready.length}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="font-extrabold text-xs sm:text-sm text-white">Manajemen Rak & Bak</h3>
+      <div class="flex items-center gap-1.5">
+        ${upgradableCount > 0 ? `
+          <button onclick="upgradeAllRackHoles()" class="btn-xs-pill bg-sky-600 hover:bg-sky-500 text-white py-1 px-2" title="Upgrade jumlah lubang semua rak sesuai saldo">
+            <i class="fa-solid fa-angles-up"></i>Upgrade Semua
+          </button>
+        ` : ''}
+        <button onclick="harvestAllReady()" class="btn-xs-pill bg-emerald-600 hover:bg-emerald-500 text-white py-1 px-2">
+          <i class="fa-solid fa-basket-shopping"></i>Panen Semua
+        </button>
+      </div>
+    </div>
+    ${iotToggleHtml}
+    <div class="space-y-2">${listHtml}</div>
+  `;
+}
+
+// TAB 2: BUILD INSTALLATIONS, EXPAND LAND & UPGRADE GREENHOUSE
+function renderTabBuild(container) {
+  const curGh = GREENHOUSE_TIERS[gameState.ghTier];
+  const nextGh = GREENHOUSE_TIERS[gameState.ghTier + 1];
+
+  const ghHtml = `
+    <div class="glass-card border-emerald-500/35 rounded-xl p-3 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] uppercase font-extrabold tracking-wider text-emerald-400">Struktur Greenhouse</span>
+        <span class="text-[11px] font-bold text-white bg-slate-800 px-2 py-0.5 rounded-md">Tier ${gameState.ghTier}/4</span>
+      </div>
+      <div class="font-bold text-xs sm:text-sm text-white">${curGh.name}</div>
+      <p class="text-[11px] text-slate-300 leading-snug">${curGh.desc}</p>
+      ${nextGh ? `
+        <div class="pt-2 border-t border-slate-700/70 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="text-[11px] font-bold text-amber-300 truncate">Next: ${nextGh.name}</div>
+            <div class="text-[10px] text-slate-400 truncate">${nextGh.desc}</div>
+          </div>
+          <button onclick="upgradeGreenhouse()" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white shrink-0" title="${formatRp(nextGh.cost)}">
+            <i class="fa-solid fa-arrow-up"></i><span>${formatRpShort(nextGh.cost)}</span>
+          </button>
+        </div>
+      ` : `<div class="text-xs font-bold text-purple-400 pt-1"><i class="fa-solid fa-crown mr-1"></i> Greenhouse Maksimal Tercapai!</div>`}
+    </div>
+  `;
+
+  const landCost = getLandExpansionCost();
+  const tandonCost = Math.round(500000 * Math.pow(1.35, gameState.tandonCount - 1));
+
+  container.innerHTML = `
+    <h3 class="font-extrabold text-xs sm:text-sm text-white">Perluasan Lahan & Instalasi</h3>
+    ${ghHtml}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div class="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-bold text-xs text-white truncate"><i class="fa-solid fa-expand text-amber-400 mr-1"></i>Perluas Lahan</div>
+          <div class="text-[10px] text-slate-400">+2 Slot (${gameState.landSlots} aktif)</div>
+        </div>
+        <button onclick="expandLand()" class="btn-compact bg-amber-600 hover:bg-amber-500 text-white shrink-0" title="${formatRp(landCost)}">
+          <i class="fa-solid fa-plus"></i><span>${formatRpShort(landCost)}</span>
+        </button>
+      </div>
+
+      <div class="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-bold text-xs text-white truncate"><i class="fa-solid fa-database text-sky-400 mr-1"></i>Tandon Air</div>
+          <div class="text-[10px] text-slate-400">+1.000L (${gameState.tandonCount} unit)</div>
+        </div>
+        <button onclick="buyTandon()" class="btn-compact bg-sky-600 hover:bg-sky-500 text-white shrink-0" title="${formatRp(tandonCost)}">
+          <i class="fa-solid fa-plus"></i><span>${formatRpShort(tandonCost)}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="space-y-2 pt-1">
+      <div class="text-[11px] font-bold text-slate-300">Pasang Instalasi Baru (${gameState.installations.length}/${gameState.landSlots} Slot):</div>
+      
+      <div class="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-bold text-xs text-white">🚰 Rak Pipa NFT (6→20 Lubang)</div>
+          <div class="text-[10px] text-slate-400 truncate">Aliran nutrisi tipis sirkulasi kontinu.</div>
+        </div>
+        <button onclick="buyInstallation('nft')" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white shrink-0" title="${formatRp(getInstallationCost('nft'))}">
+          <i class="fa-solid fa-hammer"></i><span>${formatRpShort(getInstallationCost('nft'))}</span>
+        </button>
+      </div>
+
+      <div class="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-bold text-xs text-white">🟦 Bak Rakit Apung DWC (4→15 Lubang)</div>
+          <div class="text-[10px] text-slate-400 truncate">Oksigenasi akar tinggi (+12% tumbuh).</div>
+        </div>
+        <button onclick="buyInstallation('dwc')" class="btn-compact bg-teal-600 hover:bg-teal-500 text-white shrink-0" title="${formatRp(getInstallationCost('dwc'))}">
+          <i class="fa-solid fa-hammer"></i><span>${formatRpShort(getInstallationCost('dwc'))}</span>
+        </button>
+      </div>
+
+      <div class="glass-card border-sky-500/30 rounded-xl p-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-bold text-xs text-sky-300">🐟 Unit Aquaponik (Kolam + 4→14 Lubang)</div>
+          <div class="text-[10px] text-slate-400 truncate">Ikan + tanaman saling menyuplai bio-nutrisi.</div>
+        </div>
+        <button onclick="buyInstallation('aqua')" class="btn-compact bg-sky-600 hover:bg-sky-500 text-white shrink-0" title="${formatRp(getInstallationCost('aqua'))}">
+          <i class="fa-solid fa-hammer"></i><span>${formatRpShort(getInstallationCost('aqua'))}</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// TAB 3: TOOLS & IOT UPGRADES (LV.1 - LV.5)
+function renderTabTools(container) {
+  const q = getQualityRating();
+  const toolsHtml = Object.values(TOOLS_CONFIG).map(tool => {
+    const lv = gameState.tools[tool.id];
+    const isMax = lv >= tool.maxLv;
+    const cost = Math.round(tool.baseCost * Math.pow(tool.mult, lv - 1));
+
+    return `
+      <div class="glass-card rounded-xl p-2.5 space-y-1.5">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-7 h-7 rounded-lg bg-${tool.color}-500/20 text-${tool.color}-400 flex items-center justify-center text-xs shrink-0">
+              <i class="fa-solid ${tool.icon}"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="font-bold text-xs text-white truncate">${tool.name}</div>
+              <div class="text-[10px] font-bold text-emerald-400">Level ${lv} / ${tool.maxLv}</div>
+            </div>
+          </div>
+          ${isMax
+            ? `<span class="text-[10px] font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md shrink-0">MAX</span>`
+            : `<button onclick="upgradeTool('${tool.id}')" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white shrink-0" title="${formatRp(cost)}"><i class="fa-solid fa-arrow-up"></i><span>${formatRpShort(cost)}</span></button>`
+          }
+        </div>
+        <p class="text-[10px] text-slate-400 leading-snug">${tool.desc}</p>
+        <div class="grid grid-cols-5 gap-1">
+          ${[1,2,3,4,5].map(step => `<div class="h-1 rounded-full ${step <= lv ? 'bg-emerald-400' : 'bg-slate-800'}"></div>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="flex items-center justify-between">
+      <h3 class="font-extrabold text-xs sm:text-sm text-white">Alat & Otomasi IoT</h3>
+      <span class="text-[11px] font-bold text-amber-400">${'⭐'.repeat(q.stars)} ${q.label}</span>
+    </div>
+    <div class="space-y-2">${toolsHtml}</div>
+  `;
+}
+
+// TAB 4: AGRIBUSINESS (FARM SHOP, EXPORT CONTRACTS, WAREHOUSE & SUPPLIES)
+function renderTabAgribusiness(container) {
+  const cropItems = Object.entries(gameState.inventory).filter(([_, qty]) => qty > 0);
+  const fishItems = Object.entries(gameState.fishInventory).filter(([_, qty]) => qty > 0);
+  const priceMult = getHarvestPriceMultiplier();
+
+  const warehouseHtml = (cropItems.length === 0 && fishItems.length === 0)
+    ? `<div class="text-[11px] text-slate-400 py-2 text-center">Gudang kosong. Panen tanaman atau ikan terlebih dahulu.</div>`
+    : `
+      <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+        ${cropItems.map(([id, qty]) => {
+          const c = CROPS[id];
+          const val = Math.round(c.basePrice * priceMult * qty);
+          return `
+            <div class="bg-slate-950/75 border border-slate-800 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs gap-2">
+              <span class="truncate">${c.icon} <strong>${c.name}</strong> <span class="text-slate-400">x${qty}</span></span>
+              <button onclick="sellDirectMarket('crop', '${id}')" class="btn-xs-pill bg-emerald-600 hover:bg-emerald-500 text-white shrink-0" title="${formatRp(val)}">
+                <i class="fa-solid fa-coins"></i>Jual (${formatRpShort(val)})
+              </button>
+            </div>
+          `;
+        }).join('')}
+        ${fishItems.map(([id, qty]) => {
+          const f = FISH_TYPES[id];
+          const val = f.sellPrice * qty;
+          return `
+            <div class="bg-slate-950/75 border border-slate-800 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs gap-2">
+              <span class="truncate">${f.icon} <strong>${f.name}</strong> <span class="text-slate-400">x${qty}</span></span>
+              <button onclick="sellDirectMarket('fish', '${id}')" class="btn-xs-pill bg-sky-600 hover:bg-sky-500 text-white shrink-0" title="${formatRp(val)}">
+                <i class="fa-solid fa-coins"></i>Jual (${formatRpShort(val)})
+              </button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+  const shopUpgradeCost = !gameState.farmShop.built
+    ? 1500000
+    : Math.round(1800000 * Math.pow(1.8, gameState.farmShop.level - 1));
+
+  const contractsHtml = gameState.contracts.map(c => {
+    const crop = CROPS[c.cropId];
+    const have = gameState.inventory[c.cropId] || 0;
+    const ready = have >= c.qty;
+    return `
+      <div class="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="text-xs font-bold text-white flex items-center gap-1.5">
+            <span>${c.flag} ${c.country}</span>
+            <span class="text-[10px] text-amber-400 font-semibold">(${c.daysLeft}h)</span>
+          </div>
+          <div class="text-[10px] text-slate-300 truncate">${crop.icon} <strong>${c.qty}x ${crop.name}</strong> (Stok: ${have})</div>
+          <div class="text-[11px] font-bold text-emerald-400">${formatRp(c.reward)}</div>
+        </div>
+        <button onclick="fulfillContract('${c.id}')" class="btn-compact shrink-0 ${ready ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}">
+          <i class="fa-solid fa-ship"></i><span>Kirim</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <!-- Quick Supplies -->
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="buySupply('nutrient')" class="glass-card border-purple-500/30 hover:border-purple-400 rounded-xl p-2 flex items-center justify-between text-left">
+        <div>
+          <div class="text-[11px] font-bold text-purple-300">🧪 +300L AB Mix</div>
+          <div class="text-[10px] text-slate-400">Nutrisi Hidroponik</div>
+        </div>
+        <span class="text-xs font-extrabold text-white bg-purple-600/80 px-2 py-1 rounded-lg">150rb</span>
+      </button>
+      <button onclick="buySupply('feed')" class="glass-card border-amber-500/30 hover:border-amber-400 rounded-xl p-2 flex items-center justify-between text-left">
+        <div>
+          <div class="text-[11px] font-bold text-amber-300">🍤 +40kg Pelet</div>
+          <div class="text-[10px] text-slate-400">Pakan Ikan</div>
+        </div>
+        <span class="text-xs font-extrabold text-white bg-amber-600/80 px-2 py-1 rounded-lg">120rb</span>
+      </button>
+    </div>
+
+    <!-- Warehouse -->
+    <div class="glass-card rounded-xl p-2.5">
+      <div class="text-xs font-extrabold text-white mb-2"><i class="fa-solid fa-warehouse text-emerald-400 mr-1"></i> Gudang Hasil Panen</div>
+      ${warehouseHtml}
+    </div>
+
+    <!-- Farm Shop -->
+    <div class="glass-card border-emerald-500/30 rounded-xl p-2.5 flex items-center justify-between gap-2">
+      <div class="min-w-0">
+        <div class="text-xs font-extrabold text-white truncate">🏪 ${gameState.farmShop.built ? `Toko Kebun (Lv.${gameState.farmShop.level}/5)` : 'Bangun Toko Kebun'}</div>
+        <p class="text-[10px] text-slate-400 truncate">
+          ${gameState.farmShop.built
+            ? `Auto-jual margin +${25 + (gameState.farmShop.level-1)*8}% • Terjual ${gameState.farmShop.customersServed}`
+            : 'Jual langsung depan rumah (+25% profit).'}
+        </p>
+      </div>
+      ${gameState.farmShop.level < 5 ? `
+        <button onclick="buildOrUpgradeFarmShop()" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white shrink-0" title="${formatRp(shopUpgradeCost)}">
+          <i class="fa-solid fa-store"></i><span>${gameState.farmShop.built ? 'Up' : 'Bangun'} (${formatRpShort(shopUpgradeCost)})</span>
+        </button>
+      ` : `<span class="text-[10px] font-bold text-amber-400">MAX</span>`}
+    </div>
+
+    <!-- International Export Contracts -->
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-extrabold text-white"><i class="fa-solid fa-plane-departure text-sky-400 mr-1"></i> Kontrak Ekspor</span>
+        <span class="text-[10px] text-slate-400">Min. Pickup L300</span>
+      </div>
+      ${contractsHtml}
+    </div>
+  `;
+}
+
+// TAB 5: ASSETS & LIFESTYLE
+function renderTabAssets(container) {
+  const curHouse = HOUSES[gameState.houseTier];
+  const nextHouse = HOUSES[gameState.houseTier + 1];
+
+  const curVeh = VEHICLES[gameState.vehicleTier];
+  const nextVeh = VEHICLES[gameState.vehicleTier + 1];
+
+  container.innerHTML = `
+    <h3 class="font-extrabold text-xs sm:text-sm text-white">Aset Properti & Armada</h3>
+
+    <!-- House Upgrade -->
+    <div class="glass-card border-amber-500/30 rounded-xl p-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-2xl">${curHouse.icon}</span>
+        <div class="min-w-0">
+          <div class="text-xs font-bold text-white truncate">${curHouse.name}</div>
+          <div class="text-[10px] text-amber-400 truncate">${curHouse.bonusText}</div>
+        </div>
+      </div>
+      ${nextHouse ? `
+        <button onclick="buyHouseUpgrade()" class="btn-compact bg-amber-600 hover:bg-amber-500 text-white shrink-0" title="Renovasi ke ${nextHouse.name} (${formatRp(nextHouse.cost)})">
+          <i class="fa-solid fa-house-chimney"></i><span>${formatRpShort(nextHouse.cost)}</span>
+        </button>
+      ` : `<span class="text-[10px] font-bold text-emerald-400 shrink-0">MAX</span>`}
+    </div>
+
+    <!-- Vehicle Upgrade -->
+    <div class="glass-card border-sky-500/30 rounded-xl p-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-2xl">${curVeh.icon}</span>
+        <div class="min-w-0">
+          <div class="text-xs font-bold text-white truncate">${curVeh.name}</div>
+          <div class="text-[10px] text-sky-400 truncate">${curVeh.bonusText}</div>
+        </div>
+      </div>
+      ${nextVeh ? `
+        <button onclick="buyVehicleUpgrade()" class="btn-compact bg-sky-600 hover:bg-sky-500 text-white shrink-0" title="Beli ${nextVeh.name} (${formatRp(nextVeh.cost)})">
+          <i class="fa-solid fa-truck"></i><span>${formatRpShort(nextVeh.cost)}</span>
+        </button>
+      ` : `<span class="text-[10px] font-bold text-emerald-400 shrink-0">MAX</span>`}
+    </div>
+
+    <!-- Extra Supporting Assets -->
+    <div class="space-y-2 pt-1">
+      <div class="text-[11px] font-bold text-slate-300">Infrastruktur Pendukung:</div>
+      ${Object.values(EXTRA_ASSETS).map(asset => {
+        const owned = gameState.ownedExtras[asset.id];
+        return `
+          <div class="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white truncate">${asset.icon} ${asset.name}</div>
+              <div class="text-[10px] text-slate-400 leading-snug">${asset.desc}</div>
+            </div>
+            ${owned
+              ? `<span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-md shrink-0">AKTIF</span>`
+              : `<button onclick="buyExtraAsset('${asset.id}')" class="btn-compact bg-emerald-600 hover:bg-emerald-500 text-white shrink-0" title="${formatRp(asset.cost)}"><i class="fa-solid fa-plus"></i><span>${formatRpShort(asset.cost)}</span></button>`
+            }
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ============================================================================
+// 10. SPEED, SAVE/LOAD & MODALS
+// ============================================================================
+
+function setGameSpeed(spd) {
+  gameSpeed = spd;
+  [0, 1, 2, 4].forEach(s => {
+    const btn = document.getElementById(`spd-${s}`);
+    if (s === spd) {
+      btn.classList.add('bg-emerald-600', 'text-white');
+      btn.classList.remove('text-slate-400');
+    } else {
+      btn.classList.remove('bg-emerald-600', 'text-white');
+      btn.classList.add('text-slate-400');
+    }
+  });
+}
+
+function saveGameSilent() {
+  try {
+    localStorage.setItem('hidroagro_save_v1', JSON.stringify(gameState));
+  } catch (e) {}
+}
+
+function manualSave() {
+  saveGameSilent();
+  showToast('💾 Progres permainan berhasil disimpan!', 'success');
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem('hidroagro_save_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      gameState = Object.assign(createInitialState(), parsed);
+      if (Array.isArray(gameState.installations)) {
+        gameState.installations.forEach(inst => {
+          if (!inst.holeLevel) {
+            const tiers = (RACK_HOLE_TIERS[inst.type] || RACK_HOLE_TIERS.nft).holes;
+            const foundIdx = tiers.findIndex(h => h >= inst.capacity);
+            inst.holeLevel = foundIdx >= 0 ? foundIdx + 1 : 1;
+          }
+        });
+      }
+      return true;
+    }
+  } catch (e) {}
+  gameState = createInitialState();
+  return false;
+}
+
+function openHelpModal() {
+  const m = document.getElementById('help-modal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+}
+
+function closeHelpModal() {
+  const m = document.getElementById('help-modal');
+  m.classList.add('hidden');
+  m.classList.remove('flex');
+}
+
+function resetGameConfirm() {
+  closeHelpModal();
+  const m = document.getElementById('reset-modal');
+  m.classList.remove('hidden');
+  m.classList.add('flex');
+}
+
+function executeResetGame() {
+  localStorage.removeItem('hidroagro_save_v1');
+  gameState = createInitialState();
+  while (gameState.contracts.length < 3) generateExportContract();
+  selectedUnitId = gameState.installations[0].id;
+  selectedSlotIdx = null;
+  document.getElementById('reset-modal').classList.add('hidden');
+  document.getElementById('reset-modal').classList.remove('flex');
+  renderAll();
+  showToast('🔄 Permainan telah di-reset ke awal!', 'info');
+}
+
+// ============================================================================
+// 11. BOOTSTRAP
+// ============================================================================
+
+window.onload = function() {
+  const loaded = loadGame();
+  while (gameState.contracts.length < 3) {
+    generateExportContract();
+  }
+  if (gameState.installations.length > 0) {
+    selectedUnitId = gameState.installations[0].id;
+  }
+  renderAll();
+  if (!loaded) {
+    openHelpModal();
+  }
+  setInterval(gameTick, 500);
+  setInterval(saveGameSilent, 15000);
+};
+</script>
+</body>
+</html>
